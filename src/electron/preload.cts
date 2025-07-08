@@ -8,11 +8,24 @@ type Statistics = {
 
 electron.contextBridge.exposeInMainWorld("electron", {
   subscribeStatistics: (callback: (statistics: Statistics) => void) => {
-    electron.ipcRenderer.on("statistics", (event: any, data: Statistics) => {
+    ipcOn("statistics", (data: Statistics) => {
       callback(data);
     });
   },
-  getStaticData: () => {
-    return electron.ipcRenderer.invoke("getStaticData");
-  },
-});
+  getStaticData: () => ipcInvoke("getStaticData"),
+} satisfies Window["electron"]);
+
+function ipcInvoke<Key extends keyof EventPayloadMapping>(
+  key: Key
+): Promise<EventPayloadMapping[Key]> {
+  return electron.ipcRenderer.invoke(key);
+}
+
+function ipcOn<Key extends keyof EventPayloadMapping>(
+  key: Key,
+  callback: (payload: EventPayloadMapping[Key]) => void
+) {
+  electron.ipcRenderer.on(key, (_: any, payload: EventPayloadMapping[Key]) =>
+    callback(payload)
+  );
+}

@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "types": ["./types.d.ts"]
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

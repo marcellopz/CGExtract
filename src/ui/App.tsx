@@ -12,7 +12,6 @@ function App() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    // @ts-expect-error preload.cjs is not typed
     window.electron.subscribeStatistics((statistics: Statistics) => {
       console.log(statistics);
     });
