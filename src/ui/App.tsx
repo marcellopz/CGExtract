@@ -12,9 +12,12 @@ function App() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    window.electron.subscribeStatistics((statistics: Statistics) => {
-      console.log(statistics);
-    });
+    const unsubscribe = window.electron.subscribeStatistics(
+      (statistics: Statistics) => {
+        console.log(statistics);
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   return (
