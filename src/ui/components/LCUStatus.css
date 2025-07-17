@@ -1,0 +1,42 @@
+.lcu-status {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #f9f9f9;
+  margin-bottom: 10px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.status-dot.connected {
+  background: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+.status-dot.disconnected {
+  background: #f44336;
+}
+
+.status-text {
+  font-weight: 500;
+}
+
+.auth-info {
+  margin-top: 5px;
+  color: #666;
+}
+
+.error-message {
+  margin-top: 5px;
+}

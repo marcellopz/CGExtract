@@ -1,45 +1,47 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useState } from "react";
 import "./App.css";
-
-type Statistics = {
-  cpuUsage: number;
-  ramUsage: number;
-  storageUsage: number;
-};
+import { LCUStatus } from "./components/LCUStatus";
+import { SummonerProfile } from "./components/SummonerProfile";
+import { MatchHistory } from "./components/MatchHistory";
+import { BulkTimelineDownload } from "./components/BulkTimelineDownload";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const [activeTab, setActiveTab] = useState("status");
 
-  useEffect(() => {
-    const unsubscribe = window.electron.subscribeStatistics(
-      (statistics: Statistics) => {
-        console.log(statistics);
-      }
-    );
-    return () => unsubscribe();
-  }, []);
+  const tabs = [
+    { id: "status", label: "LCU Status", component: <LCUStatus /> },
+    {
+      id: "profile",
+      label: "Summoner Profile",
+      component: <SummonerProfile />,
+    },
+    { id: "matches", label: "Match History", component: <MatchHistory /> },
+    { id: "bulk", label: "Bulk Timeline", component: <BulkTimelineDownload /> },
+  ];
 
   return (
-    <>
-      <div>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React13123123</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app">
+      <header className="app-header">
+        <h1>CGExtract - League Client Data Extractor</h1>
+        <p>Extract and analyze data from the League of Legends client</p>
+      </header>
+
+      <nav className="tab-navigation">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+
+      <main className="app-content">
+        {tabs.find((tab) => tab.id === activeTab)?.component}
+      </main>
+    </div>
   );
 }
 

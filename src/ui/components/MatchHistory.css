@@ -1,0 +1,292 @@
+.match-history {
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+  min-height: 48px;
+}
+
+.header h2 {
+  margin: 0;
+  align-self: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.matches-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.matches-per-page label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.matches-per-page select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  color: black;
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.match-summary {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.load-more-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.load-more-btn {
+  padding: 12px 24px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.load-more-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+button {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.matches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.match {
+  color: black;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #ddd;
+}
+
+.match.win {
+  background: #d8e8d8;
+  border-left-color: #4caf50;
+}
+
+.match.loss {
+  background: #e8d8d8;
+  border-left-color: #f44336;
+}
+
+.match-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  margin-right: 20px;
+}
+
+.queue-type {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.time-info {
+  font-size: 12px;
+  color: #666;
+}
+
+.result {
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.result.victory {
+  color: #4caf50;
+}
+
+.result.defeat {
+  color: #f44336;
+}
+
+.match-details {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+  justify-content: center;
+}
+
+.champion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+}
+
+.champion-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.stats {
+  display: flex;
+  gap: 15px;
+  min-width: 200px;
+}
+
+.kda {
+  text-align: center;
+}
+
+.kda-ratio {
+  font-size: 12px;
+  color: #666;
+}
+
+.kills {
+  color: #4caf50;
+}
+
+.deaths {
+  color: #f44336;
+}
+
+.assists {
+  color: #ff9800;
+}
+
+.cs,
+.damage {
+  font-size: 12px;
+  color: #666;
+}
+
+.items {
+  display: flex;
+  gap: 2px;
+}
+
+.item-slot {
+  width: 24px;
+  height: 24px;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.item-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.match-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 15px;
+}
+
+.download-btn {
+  padding: 8px 12px;
+  background: #bbb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.match.win .download-btn {
+  background: #a0c0a0;
+  color: #2d4a2d;
+}
+
+.match.win .download-btn:hover {
+  background: #8fb08f;
+}
+
+.match.loss .download-btn {
+  background: #c0a0a0;
+  color: #4a2d2d;
+}
+
+.match.loss .download-btn:hover {
+  background: #b08f8f;
+}
+
+.download-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

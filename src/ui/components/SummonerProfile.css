@@ -1,0 +1,88 @@
+.summoner-profile {
+  padding: 20px;
+  max-width: 600px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.search-form {
+  display: flex;
+  gap: 5px;
+}
+
+.search-form input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  color: red;
+  margin: 10px 0;
+}
+
+.summoner-info {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background: white;
+}
+
+.basic-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.profile-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+}
+
+.queue-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.queue {
+  flex: 1;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.queue h5 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.queue p {
+  margin: 5px 0;
+  color: #666;
+}
