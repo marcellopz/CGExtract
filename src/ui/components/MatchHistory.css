@@ -131,6 +131,7 @@ button:disabled {
 
 .match {
   color: black;
+  max-width: 100%;
   display: flex;
   align-items: center;
   padding: 15px;
@@ -152,7 +153,6 @@ button:disabled {
   display: flex;
   flex-direction: column;
   min-width: 120px;
-  margin-right: 20px;
 }
 
 .queue-type {
@@ -254,7 +254,6 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: 15px;
 }
 
 .download-btn {
