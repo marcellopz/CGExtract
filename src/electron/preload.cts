@@ -1,7 +1,7 @@
 const electron = require("electron");
 
 electron.contextBridge.exposeInMainWorld("electron", {
-  // LCU event subscriptions
+  // Event subscriptions
   subscribeToLCU: <T extends keyof EventPayloadMapping>(
     event: T,
     callback: (data: EventPayloadMapping[T]) => void
@@ -22,6 +22,23 @@ electron.contextBridge.exposeInMainWorld("electron", {
   getLiveGame: () => ipcInvoke("getLiveGame"),
   getPlayerCard: (summonerId: number, position: string, teamId: number) =>
     ipcInvoke("getPlayerCard", summonerId, position, teamId),
+
+  // Firebase auth methods
+  signInWithEmail: (email: string, password: string) =>
+    ipcInvoke("signInWithEmail", email, password),
+  signUpWithEmail: (email: string, password: string, displayName?: string) =>
+    ipcInvoke("signUpWithEmail", email, password, displayName),
+  signInWithGoogle: () => ipcInvoke("signInWithGoogle"),
+  signOut: () => ipcInvoke("signOut"),
+  getCurrentUser: () => ipcInvoke("getCurrentUser"),
+
+  // Firebase data sync methods
+  syncSummonerData: (data: unknown) => ipcInvoke("syncSummonerData", data),
+  syncMatchHistory: (data: unknown) => ipcInvoke("syncMatchHistory", data),
+  syncRankedStats: (data: unknown) => ipcInvoke("syncRankedStats", data),
+  getCloudSummonerData: () => ipcInvoke("getCloudSummonerData"),
+  getCloudMatchHistory: () => ipcInvoke("getCloudMatchHistory"),
+  getCloudRankedStats: () => ipcInvoke("getCloudRankedStats"),
 } satisfies Window["electron"]);
 
 function ipcInvoke<Key extends keyof IPCHandlerMapping>(

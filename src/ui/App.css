@@ -5,20 +5,73 @@
 }
 
 .app-header {
-  background: #282c34;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 20px;
-  text-align: center;
 }
 
-.app-header h1 {
-  margin: 0 0 10px 0;
-  font-size: 28px;
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
 }
 
-.app-header p {
+.header-text {
+  flex: 1;
+}
+
+.header-text h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.header-text p {
   margin: 0;
-  opacity: 0.8;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.header-auth {
+  display: flex;
+  align-items: center;
+}
+
+.auth-button {
+  padding: 0.75rem 1.5rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.auth-button:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.auth-loading {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.cloud-sync-status {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 1px solid #c3e6cb;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .tab-navigation {

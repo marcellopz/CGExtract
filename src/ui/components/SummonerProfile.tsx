@@ -39,30 +39,35 @@ export function SummonerProfile() {
       const currentSummoner = await window.electron.getCurrentSummoner();
       setSummoner(currentSummoner);
 
-      const stats = await window.electron.getRankedStats();
+      const stats = await window.electron.getRankedStats(currentSummoner.puuid);
       setRankedStats(stats);
-    } catch (err) {
-      setError("Failed to load current summoner");
-      console.error(err);
+    } catch (error) {
+      console.error("Error fetching current summoner:", error);
+      setError("Failed to fetch current summoner data");
     } finally {
       setLoading(false);
     }
   };
 
-  const searchSummoner = async (name: string) => {
-    if (!name.trim()) return;
+  const searchSummoner = async () => {
+    if (!searchName.trim()) {
+      setError("Please enter a summoner name");
+      return;
+    }
 
     setLoading(true);
     setError(null);
     try {
-      const foundSummoner = await window.electron.searchSummoner(name);
-      setSummoner(foundSummoner);
+      const searchedSummoner = await window.electron.searchSummoner(searchName);
+      setSummoner(searchedSummoner);
 
-      const stats = await window.electron.getRankedStats(foundSummoner.puuid);
+      const stats = await window.electron.getRankedStats(
+        searchedSummoner.puuid
+      );
       setRankedStats(stats);
-    } catch (err) {
-      setError(`Summoner "${name}" not found`);
-      console.error(err);
+    } catch (error) {
+      console.error("Error searching summoner:", error);
+      setError("Failed to find summoner. Please check the name and try again.");
     } finally {
       setLoading(false);
     }
@@ -70,7 +75,7 @@ export function SummonerProfile() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    searchSummoner(searchName);
+    searchSummoner();
   };
 
   const formatRank = (queue: RankedQueue) => {

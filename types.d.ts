@@ -113,6 +113,7 @@ type EventPayloadMapping = {
 
 // IPC invoke handlers (renderer calls main)
 type IPCHandlerMapping = {
+  // LCU handlers
   getLCUAuth: LCUAuth;
   getCurrentSummoner: SummonerData;
   getRankedStats: RankedStats;
@@ -129,7 +130,7 @@ type UnsubscribeFunction = () => void;
 
 interface Window {
   electron: {
-    // LCU event subscriptions
+    // Event subscriptions
     subscribeToLCU: <T extends keyof EventPayloadMapping>(
       event: T,
       callback: (data: EventPayloadMapping[T]) => void
