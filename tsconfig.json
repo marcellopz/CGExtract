@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "types": ["./types.d.ts"]
+    "types": ["./types.d.ts"],
+    "noImplicitAny": false
   },
   "files": [],
   "references": [

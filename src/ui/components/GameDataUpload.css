@@ -1,0 +1,377 @@
+.game-data-upload {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.upload-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.upload-header h2 {
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.upload-header p {
+  color: #666;
+  margin: 0;
+}
+
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background: #fafafa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.upload-area:hover {
+  border-color: #007acc;
+  background: #f0f8ff;
+}
+
+.upload-area.drag-active {
+  border-color: #007acc;
+  background: #e6f3ff;
+  transform: scale(1.02);
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  opacity: 0.7;
+}
+
+.upload-content h3 {
+  margin: 0;
+  color: #333;
+  font-weight: 600;
+}
+
+.upload-content p {
+  margin: 0;
+  color: #666;
+}
+
+.upload-button {
+  background: #007acc;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.upload-button:hover {
+  background: #005fa3;
+}
+
+.upload-hint {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.processing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f0f8ff;
+  border: 1px solid #007acc;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-top: 2px solid #007acc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.files-section {
+  margin-top: 30px;
+}
+
+.files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.files-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.files-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.stat {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin: 10px 0;
+}
+
+.stat.ready {
+  background: #e8f5e8;
+  color: #2d7d2d;
+}
+
+.stat.error {
+  background: #ffe6e6;
+  color: #d63384;
+}
+
+.clear-button {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.clear-button:hover {
+  background: #5a6268;
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s;
+}
+
+.file-item:hover {
+  border-color: #007acc;
+  box-shadow: 0 2px 8px rgba(0, 122, 204, 0.1);
+}
+
+.file-item.ready {
+  border-left: 4px solid #28a745;
+}
+
+.file-item.error {
+  border-left: 4px solid #dc3545;
+}
+
+.file-item.pending,
+.file-item.validating {
+  border-left: 4px solid #ffc107;
+}
+
+.file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-actions {
+  margin-top: 8px;
+}
+
+.assign-roles-button {
+  background: #007acc;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.assign-roles-button:hover {
+  background: #005fa3;
+}
+
+.roles-assigned {
+  background: #d4edda;
+  color: #155724;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.file-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-status,
+.file-type {
+  font-size: 18px;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.file-details {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.file-type-label {
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.game-id {
+  background: #007acc;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.file-error {
+  margin-top: 4px;
+}
+
+.error-text {
+  color: #dc3545;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.remove-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-button:hover {
+  background: #c82333;
+}
+
+.upload-actions {
+  margin-top: 24px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.upload-button-primary {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.upload-button-primary:hover:not(:disabled) {
+  background: #218838;
+}
+
+.upload-button-primary:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.upload-note {
+  margin: 12px 0 0 0;
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .game-data-upload {
+    padding: 15px;
+  }
+
+  .upload-area {
+    padding: 30px 15px;
+  }
+
+  .files-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .files-stats {
+    order: 2;
+  }
+
+  .clear-button {
+    order: 3;
+    align-self: flex-end;
+  }
+
+  .file-details {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
