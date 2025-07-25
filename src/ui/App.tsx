@@ -32,7 +32,7 @@ function AppContent() {
         <div className="header-content">
           <div className="header-text">
             <h1>CGExtract</h1>
-            <p>extract x5 data</p>
+            <p>Extract LCU data and manage X5</p>
           </div>
 
           <div className="header-auth">
@@ -40,8 +40,8 @@ function AppContent() {
               <div className="auth-loading">Loading...</div>
             ) : user ? (
               <div className="header-user-section">
-                <UserProfile />
                 <LCUStatus className="header-lcu-status" />
+                <UserProfile />
               </div>
             ) : (
               <button
