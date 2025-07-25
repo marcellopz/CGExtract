@@ -39,6 +39,29 @@
   align-items: center;
 }
 
+.header-user-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header-lcu-status {
+  font-size: 0.85rem;
+}
+
+.header-lcu-status .status-indicator {
+  justify-content: flex-start;
+}
+
+.header-lcu-status .status-text {
+  color: #333;
+}
+
+.header-lcu-status .auth-info small {
+  color: #333;
+}
+
 .auth-button {
   padding: 0.75rem 1.5rem;
   background-color: rgba(255, 255, 255, 0.15);

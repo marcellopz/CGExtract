@@ -11,7 +11,42 @@ export interface LCUAuth {
   password: string;
 }
 
-let cachedAuth: LCUAuth | null = null;
+interface CachedAuth {
+  auth: LCUAuth;
+  timestamp: number;
+}
+
+let cachedAuth: CachedAuth | null = null;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+function isLeagueClientRunning(): Promise<boolean> {
+  if (platform() !== "win32") {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve) => {
+    const name = "LeagueClientUx";
+    let cmd = `Get-Process -Name "${name}" -ErrorAction SilentlyContinue | Select-Object -First 1`;
+    let cmdShell = "powershell.exe";
+
+    // Check if we're running an old release of windows (6 == Win7)
+    if (parseInt(release().split(".")[0], 10) < 7) {
+      cmd = `tasklist /FI "IMAGENAME eq ${name}.exe" | find "${name}.exe"`;
+      cmdShell = "cmd.exe";
+    }
+
+    exec(cmd, { shell: cmdShell }, (error, stdout) => {
+      if (error) {
+        resolve(false);
+        return;
+      }
+
+      // Check if the output contains the process name
+      const isRunning = stdout.includes(name);
+      resolve(isRunning);
+    });
+  });
+}
 
 export async function getAuthFromProcess(): Promise<LCUAuth> {
   if (platform() !== "win32") {
@@ -70,7 +105,36 @@ export async function getAuthFromProcess(): Promise<LCUAuth> {
 }
 
 export function setAuth(auth: LCUAuth | null): void {
-  cachedAuth = auth;
+  if (auth) {
+    cachedAuth = {
+      auth,
+      timestamp: Date.now(),
+    };
+  } else {
+    cachedAuth = null;
+  }
+}
+
+export function invalidateAuth(): void {
+  cachedAuth = null;
+  console.log("LCU auth cache invalidated");
+}
+
+function isCacheValid(): boolean {
+  if (!cachedAuth) {
+    return false;
+  }
+
+  const now = Date.now();
+  const cacheAge = now - cachedAuth.timestamp;
+
+  if (cacheAge > CACHE_DURATION) {
+    console.log("LCU auth cache expired (older than 10 minutes)");
+    invalidateAuth();
+    return false;
+  }
+
+  return true;
 }
 
 export function getRunLevel(): boolean {
@@ -84,18 +148,28 @@ export function getRunLevel(): boolean {
 }
 
 export async function getLCUAuth(): Promise<LCUAuth | null> {
-  if (cachedAuth) {
-    return cachedAuth;
+  // Check if League client is running first
+  const isRunning = await isLeagueClientRunning();
+  if (!isRunning) {
+    console.log("League client is not running, invalidating cache");
+    invalidateAuth();
+    return null;
+  }
+
+  if (cachedAuth && isCacheValid()) {
+    return cachedAuth.auth;
   }
 
   try {
-    cachedAuth = await getAuthFromProcess();
+    const auth = await getAuthFromProcess();
+    setAuth(auth);
     // Save auth in case of failure
     const authPath = join(tmpdir(), "lcuAuth");
-    await fs.writeFile(authPath, JSON.stringify(cachedAuth));
-    return cachedAuth;
+    await fs.writeFile(authPath, JSON.stringify(auth));
+    return auth;
   } catch (e) {
     console.log("ERR: Game is not running..", e);
+    invalidateAuth();
     return null;
   }
 }

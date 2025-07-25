@@ -1,4 +1,4 @@
-import { getLCUAuth, setAuth } from "./lcuAuth.js";
+import { getLCUAuth, invalidateAuth } from "./lcuAuth.js";
 import { requestURL, requestLiveClientAPI } from "./lcuRequest.js";
 import { BrowserWindow } from "electron";
 
@@ -301,12 +301,11 @@ export class LCUManager {
           code: errorCode,
         });
         break;
-      case "ECONNREFUSED":
       case "HTTP 403":
       case "0":
       default:
         // Connection issues
-        setAuth(null);
+        invalidateAuth();
         this.isConnected = false;
         this.window.webContents.send("lcu-auth-status", {
           connected: false,

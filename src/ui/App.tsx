@@ -11,12 +11,11 @@ import { AuthModal } from "./components/auth/AuthModal";
 import { useAuth } from "./hooks/useAuth";
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState("status");
+  const [activeTab, setActiveTab] = useState("profile");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, loading } = useAuth();
 
   const tabs = [
-    { id: "status", label: "LCU Status", component: <LCUStatus /> },
     {
       id: "profile",
       label: "Summoner Profile",
@@ -32,15 +31,18 @@ function AppContent() {
       <header className="app-header">
         <div className="header-content">
           <div className="header-text">
-            <h1>CGExtract - League Client Data Extractor</h1>
-            <p>Extract and analyze data from the League of Legends client</p>
+            <h1>CGExtract</h1>
+            <p>extract x5 data</p>
           </div>
 
           <div className="header-auth">
             {loading ? (
               <div className="auth-loading">Loading...</div>
             ) : user ? (
-              <UserProfile />
+              <div className="header-user-section">
+                <UserProfile />
+                <LCUStatus className="header-lcu-status" />
+              </div>
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}

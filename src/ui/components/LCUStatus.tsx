@@ -23,6 +23,7 @@ export function LCUStatus({ className }: LCUStatusProps) {
     const checkAuth = async () => {
       try {
         const authData = await window.electron.getLCUAuth();
+        console.log("authData", authData);
         setAuth(authData);
         setConnected(authData !== null);
         setError(null);
