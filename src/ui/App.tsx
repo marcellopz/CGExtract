@@ -5,6 +5,7 @@ import { SummonerProfile } from "./components/SummonerProfile";
 import { MatchHistory } from "./components/MatchHistory";
 import { BulkTimelineDownload } from "./components/BulkTimelineDownload";
 import { GameDataUpload } from "./components/GameDataUpload";
+import { StatsManager } from "./components/StatsManager";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { UserProfile } from "./components/UserProfile";
 import { AuthModal } from "./components/auth/AuthModal";
@@ -24,6 +25,7 @@ function AppContent() {
     { id: "matches", label: "Match History", component: <MatchHistory /> },
     { id: "bulk", label: "Bulk Timeline", component: <BulkTimelineDownload /> },
     { id: "upload", label: "Game Data Upload", component: <GameDataUpload /> },
+    { id: "stats", label: "Stats Manager", component: <StatsManager /> },
   ];
 
   return (
