@@ -376,6 +376,7 @@ export function processDataAll(matches: any) {
     blueSide.towerKills += blue.towerKills;
     blueSide.wins += blue.win === "Win" ? 1 : 0;
     blue.bans?.forEach((b: any) => {
+      if (b.championId < 0) return;
       champions[b.championId].bans += 1;
     });
 
@@ -391,6 +392,7 @@ export function processDataAll(matches: any) {
     redSide.towerKills += red.towerKills;
     redSide.wins += red.win === "Win" ? 1 : 0;
     red.bans?.forEach((b: any) => {
+      if (b.championId < 0) return;
       champions[b.championId].bans += 1;
     });
 

@@ -25,9 +25,12 @@ const validateMatch = (matchObj: GameDetails): ValidationResult => {
   const errors: string[] = [];
 
   // Check gameType is CUSTOM_GAME
-  if (matchObj.gameType !== "CUSTOM_GAME") {
+  if (
+    matchObj.gameType !== "CUSTOM_GAME" &&
+    matchObj.gameType !== "MATCHED_GAME"
+  ) {
     errors.push(
-      `Invalid gameType: ${matchObj.gameType}. Expected: CUSTOM_GAME`
+      `Invalid gameType: ${matchObj.gameType}. Expected: CUSTOM_GAME or MATCHED_GAME`
     );
   }
 
