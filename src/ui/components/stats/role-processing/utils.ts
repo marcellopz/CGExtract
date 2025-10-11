@@ -376,11 +376,12 @@ export function organizeStatsByRole(
 }
 
 export type ParticipantCalculatedAverageStats = {
-  [key in keyof ParticipantCalculatedStats]: number;
-};
+  wins: number;
+} & { [key in keyof ParticipantCalculatedStats]: number };
 
 export const initializeParticipantCalculatedAverageStats: ParticipantCalculatedAverageStats =
   {
+    wins: 0,
     kills: 0,
     deaths: 0,
     assists: 0,
@@ -470,6 +471,7 @@ export function calculateAverageStats(
 
   // Sum all numeric stats
   for (const stat of lastMatches) {
+    averageStats.wins += stat.win ? 1 : 0;
     averageStats.kills += stat.kills;
     averageStats.deaths += stat.deaths;
     averageStats.assists += stat.assists;
@@ -548,6 +550,7 @@ export function calculateAverageStats(
   }
 
   // Calculate averages (divide by number of games)
+  averageStats.wins /= numberOfGames;
   averageStats.kills /= numberOfGames;
   averageStats.deaths /= numberOfGames;
   averageStats.assists /= numberOfGames;
