@@ -18,6 +18,18 @@ export async function getMatches() {
   return matches;
 }
 
+export async function getFullMatches() {
+  const re = await get(child(dbRef, `full-json-matches`));
+  const matches = await re.val();
+  return matches;
+}
+
+export async function getTimelines() {
+  const re = await get(child(dbRef, `timelines`));
+  const timelines = await re.val();
+  return timelines;
+}
+
 export async function getMatchesByPlayer() {
   const re = await get(child(dbRef, `pre-processed-data/players`));
   const players = await re.val();
@@ -30,6 +42,26 @@ export async function saveOverallStats(stats: unknown) {
 
 export async function savePlayerPairs(pairs: unknown) {
   await set(child(dbRef, `pre-processed-data/pairs`), pairs);
+}
+
+export async function saveRoleStats(stats: unknown) {
+  await set(child(dbRef, `pre-processed-data/role-stats`), stats);
+}
+
+export async function saveRoleLeaderboard(stats: unknown) {
+  await set(child(dbRef, `pre-processed-data/role-leaderboard`), stats);
+}
+
+export async function saveAverageStatsByRoleAByAccountIdInLastGames(
+  stats: unknown
+) {
+  await set(
+    child(
+      dbRef,
+      `pre-processed-data/average-stats-by-role-and-by-account-id-in-last-games`
+    ),
+    stats
+  );
 }
 
 export async function savePlayerStats(player: any) {
@@ -48,6 +80,12 @@ export async function savePlayerStats(player: any) {
       tagLine: player.tagLine,
     }
   );
+}
+
+export async function getPlayers() {
+  const re = await get(child(dbRef, `players`));
+  const players = await re.val();
+  return players;
 }
 
 // Overview data functions

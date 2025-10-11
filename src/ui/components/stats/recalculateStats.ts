@@ -5,12 +5,22 @@ import {
   savePlayerStats,
   saveOverallStats,
   savePlayerPairs,
+  getFullMatches,
+  getPlayers,
+  getTimelines,
+  saveAverageStatsByRoleAByAccountIdInLastGames,
+  saveRoleLeaderboard,
+  saveRoleStats,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
   processDataAll,
   processPlayerPairs,
 } from "./dataProcessing";
+import {
+  calculateRoleLeaderboard,
+  calculateRoleStats,
+} from "./role-processing";
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -21,6 +31,7 @@ export const recalculateStats = async (): Promise<void> => {
     console.log("Fetching match roles and player data...");
     const matchRoles = await getMatchRoles();
     const players = await getMatchesByPlayer();
+    const legends = await getPlayers();
 
     if (!players) {
       throw new Error("No player data found");
@@ -54,6 +65,31 @@ export const recalculateStats = async (): Promise<void> => {
     console.log("Processing player pairs...");
     const processedPairs = processPlayerPairs(allMatches);
     await savePlayerPairs(processedPairs);
+
+    const fullMatches = await getFullMatches();
+    const timelines = await getTimelines();
+
+    // Calculate and save role stats
+    console.log("Calculating and saving role stats...");
+    const result = calculateRoleStats(
+      fullMatches,
+      timelines,
+      matchRoles,
+      legends
+    );
+
+    await saveRoleStats(result);
+
+    // Calculate and save role leaderboard
+    console.log("Calculating and saving role leaderboard...");
+    const NUMBER_OF_GAMES_TO_CONSIDER = 5;
+    const { roleLeaderboard, averageStatsByRoleAByAccountIdInLastGames } =
+      calculateRoleLeaderboard(result, legends, NUMBER_OF_GAMES_TO_CONSIDER);
+
+    await saveRoleLeaderboard(roleLeaderboard);
+    await saveAverageStatsByRoleAByAccountIdInLastGames(
+      averageStatsByRoleAByAccountIdInLastGames
+    );
 
     console.log("Stats recalculation completed successfully!");
     alert("Stats saved successfully!");

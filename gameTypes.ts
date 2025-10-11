@@ -220,3 +220,14 @@ export interface PlayerForRoleAssignment {
   teamId: number;
   position: number; // 0-4 representing top, jungle, mid, adc, support
 }
+
+export type PlayerLegend = {
+  account_id: number;
+  adc: number;
+  jungle: number;
+  mid: number;
+  name: string;
+  name_id: string;
+  support: number;
+  top: number;
+};

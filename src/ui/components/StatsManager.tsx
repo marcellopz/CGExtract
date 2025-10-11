@@ -40,7 +40,7 @@ export function StatsManager() {
     try {
       await recalculateStats();
       // Refresh overview data after recalculation
-      await fetchOverviewData();
+      // await fetchOverviewData();
     } catch (error) {
       console.error("Failed to recalculate stats:", error);
     } finally {
