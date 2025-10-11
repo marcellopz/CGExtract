@@ -260,8 +260,24 @@ export const processPlayerPairs = (matches: any) => {
 };
 
 const RECENT_MATCHES_COUNT = 10;
+const LAST_N_GAMES_FOR_LEADERBOARD = 20;
 
-export function processDataAll(matches: any) {
+type LeaderboardEntry = {
+  summonerId: string;
+  value: number;
+  legend_name: string;
+  legend_id: string;
+};
+
+type OverallPlayerLeaderboard = {
+  numberOfGames: LeaderboardEntry[];
+  winRate: LeaderboardEntry[];
+  winRateLast20Games: LeaderboardEntry[];
+  numberOfChampionsPlayed: LeaderboardEntry[];
+  killParticipation: LeaderboardEntry[];
+};
+
+export function processDataAll(matches: any, legends: any) {
   let gameDurationTotal = 0;
   const blueSide = {
     baronKills: 0,
@@ -287,6 +303,18 @@ export function processDataAll(matches: any) {
     towerKills: 0,
     wins: 0,
   };
+
+  // Track player statistics for leaderboard
+  const playerStats: Record<
+    string,
+    {
+      games: number;
+      wins: number;
+      champions: Set<string>;
+      killParticipation: number[];
+      recentGames: boolean[]; // Track last 20 games wins
+    }
+  > = {};
 
   const championNamesArray = Object.keys(championNames);
   const champions: any = {};
@@ -408,7 +436,37 @@ export function processDataAll(matches: any) {
     gameDurationHistogram[intervalLabel] =
       (gameDurationHistogram[intervalLabel] || 0) + 1;
 
+    // Calculate team kills for kill participation
+    const teamKills: Record<number, number> = {};
     match.participants.forEach((p: any) => {
+      teamKills[p.teamId] = (teamKills[p.teamId] || 0) + p.stats.kills;
+    });
+
+    match.participants.forEach((p: any) => {
+      const playerId = p.summonerId.toString();
+
+      // Initialize player stats if not exists
+      if (!playerStats[playerId]) {
+        playerStats[playerId] = {
+          games: 0,
+          wins: 0,
+          champions: new Set(),
+          killParticipation: [],
+          recentGames: [],
+        };
+      }
+
+      // Update player stats
+      playerStats[playerId].games += 1;
+      playerStats[playerId].wins += p.stats.win;
+      playerStats[playerId].champions.add(p.championId.toString());
+
+      // Calculate kill participation for this game
+      const teamKillsForPlayer = teamKills[p.teamId] || 1;
+      const kp =
+        (p.stats.kills + p.stats.assists) / Math.max(teamKillsForPlayer, 1);
+      playerStats[playerId].killParticipation.push(kp);
+
       champions[p.championId].picks += 1;
       champions[p.championId].wins += p.stats.win;
       champions[p.championId].kills += p.stats.kills;
@@ -495,6 +553,24 @@ export function processDataAll(matches: any) {
     }
   });
 
+  // Now that playerStats is initialized, populate recentGames for leaderboard
+  const lastNGamesForLeaderboard = sortedMatches.slice(
+    0,
+    LAST_N_GAMES_FOR_LEADERBOARD
+  );
+
+  lastNGamesForLeaderboard.forEach((match: any) => {
+    match.participants.forEach((participant: any) => {
+      const playerId = participant.summonerId.toString();
+
+      // Track last N games for each player (for leaderboard)
+      if (playerStats[playerId]) {
+        // stats.win can be boolean (true/false) or number (1/0)
+        playerStats[playerId].recentGames.push(!!participant.stats.win);
+      }
+    });
+  });
+
   // Fill in missing months and add padding
   const paddedGamesPerMonth: any = {};
 
@@ -564,6 +640,79 @@ export function processDataAll(matches: any) {
       sortedGameDurationHistogram[key] = gameDurationHistogram[key];
     });
 
+  // Calculate leaderboards
+  const createLeaderboardEntry = (
+    playerId: string,
+    value: number
+  ): LeaderboardEntry => {
+    const legend = legends
+      ? Object.values(legends).find(
+          (l: any) => l.account_id === Number(playerId)
+        )
+      : null;
+    return {
+      summonerId: playerId,
+      value,
+      legend_name: legend ? (legend as any).name : "",
+      legend_id: legend ? (legend as any).name_id : "",
+    };
+  };
+
+  // Number of games leaderboard
+  const numberOfGamesLeaderboard = Object.entries(playerStats)
+    .map(([playerId, stats]) => createLeaderboardEntry(playerId, stats.games))
+    .sort((a, b) => b.value - a.value);
+
+  // Win rate leaderboard (minimum 5 games)
+  const winRateLeaderboard = Object.entries(playerStats)
+    .filter(([, stats]) => stats.games >= 5)
+    .map(([playerId, stats]) =>
+      createLeaderboardEntry(playerId, stats.wins / stats.games)
+    )
+    .sort((a, b) => b.value - a.value);
+
+  // Win rate last N games leaderboard (minimum half of N games required)
+  const winRateLast20GamesLeaderboard = Object.entries(playerStats)
+    .filter(
+      ([, stats]) =>
+        stats.recentGames.length >= LAST_N_GAMES_FOR_LEADERBOARD / 2
+    )
+    .map(([playerId, stats]) => {
+      const lastNGames = stats.recentGames.slice(
+        0,
+        LAST_N_GAMES_FOR_LEADERBOARD
+      );
+      const wins = lastNGames.filter((w) => w).length;
+      return createLeaderboardEntry(playerId, wins / lastNGames.length);
+    })
+    .sort((a, b) => b.value - a.value);
+
+  // Number of champions played leaderboard
+  const numberOfChampionsPlayedLeaderboard = Object.entries(playerStats)
+    .map(([playerId, stats]) =>
+      createLeaderboardEntry(playerId, stats.champions.size)
+    )
+    .sort((a, b) => b.value - a.value);
+
+  // Kill participation leaderboard (minimum 5 games)
+  const killParticipationLeaderboard = Object.entries(playerStats)
+    .filter(([, stats]) => stats.games >= 5)
+    .map(([playerId, stats]) => {
+      const avgKP =
+        stats.killParticipation.reduce((sum, kp) => sum + kp, 0) /
+        stats.killParticipation.length;
+      return createLeaderboardEntry(playerId, avgKP);
+    })
+    .sort((a, b) => b.value - a.value);
+
+  const leaderboard: OverallPlayerLeaderboard = {
+    numberOfGames: numberOfGamesLeaderboard,
+    winRate: winRateLeaderboard,
+    winRateLast20Games: winRateLast20GamesLeaderboard,
+    numberOfChampionsPlayed: numberOfChampionsPlayedLeaderboard,
+    killParticipation: killParticipationLeaderboard,
+  };
+
   return {
     gamesPerMonth: paddedGamesPerMonth,
     blueSide,
@@ -577,5 +726,6 @@ export function processDataAll(matches: any) {
     lastGame: latestDate ? latestDate.toISOString() : null, // Latest game date as string (YYYY-MM-DD)
     mostRecentGameTimestamp, // Timestamp of the most recent game
     topRecentPlayer: topRecentPlayer ? Number(topRecentPlayer) : null, // Player ID with most wins in recent matches
+    leaderboard, // Include the leaderboard data
   };
 }

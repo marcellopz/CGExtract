@@ -58,7 +58,7 @@ export const recalculateStats = async (): Promise<void> => {
       throw new Error("No match data found");
     }
 
-    const processedDataAll = processDataAll(allMatches);
+    const processedDataAll = processDataAll(allMatches, legends);
     await saveOverallStats(processedDataAll);
 
     // Process and save player pairs
