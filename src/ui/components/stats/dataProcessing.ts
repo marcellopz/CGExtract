@@ -261,6 +261,7 @@ export const processPlayerPairs = (matches: any) => {
 
 const RECENT_MATCHES_COUNT = 10;
 const LAST_N_GAMES_FOR_LEADERBOARD = 20;
+const LAST_N_GAMES_FOR_CHAMPION_LEADERBOARD = 20;
 
 type LeaderboardEntry = {
   summonerId: string;
@@ -275,6 +276,21 @@ type OverallPlayerLeaderboard = {
   winRateLast20Games: LeaderboardEntry[];
   numberOfChampionsPlayed: LeaderboardEntry[];
   killParticipation: LeaderboardEntry[];
+};
+
+type ChampionLeaderboardEntry = {
+  championId: string;
+  championName: string;
+  value: number;
+  numberOfGames: number;
+  winRate: number;
+};
+
+type ChampionLeaderboard = {
+  mostWins: ChampionLeaderboardEntry;
+  mostPlayed: ChampionLeaderboardEntry;
+  mostBanned: ChampionLeaderboardEntry;
+  mostLosses: ChampionLeaderboardEntry;
 };
 
 export function processDataAll(matches: any, legends: any) {
@@ -330,6 +346,7 @@ export function processDataAll(matches: any, legends: any) {
         deaths: 0,
         assists: 0,
         creepsKilled: 0,
+        presence: 0,
       })
   );
   const gamesPerMonth: any = {};
@@ -713,6 +730,129 @@ export function processDataAll(matches: any, legends: any) {
     killParticipation: killParticipationLeaderboard,
   };
 
+  // Calculate champion leaderboard based on LAST N GAMES only
+  const lastNGamesForChampionLeaderboard = sortedMatches.slice(
+    0,
+    LAST_N_GAMES_FOR_CHAMPION_LEADERBOARD
+  );
+
+  // Track champion stats for recent games only
+  const recentChampionStats: Record<
+    string,
+    { picks: number; wins: number; bans: number }
+  > = {};
+
+  // Initialize all champions with 0 stats
+  championNamesArray.forEach((id) => {
+    recentChampionStats[id] = {
+      picks: 0,
+      wins: 0,
+      bans: 0,
+    };
+  });
+
+  // Process only the last N games
+  lastNGamesForChampionLeaderboard.forEach((match: any) => {
+    // Track picks and wins
+    match.participants.forEach((p: any) => {
+      const champId = p.championId.toString();
+      if (recentChampionStats[champId]) {
+        recentChampionStats[champId].picks += 1;
+        recentChampionStats[champId].wins += p.stats.win ? 1 : 0;
+      }
+    });
+
+    // Track bans
+    match.teams.forEach((team: any) => {
+      team.bans?.forEach((b: any) => {
+        if (b.championId > 0 && recentChampionStats[b.championId.toString()]) {
+          recentChampionStats[b.championId.toString()].bans += 1;
+        }
+      });
+    });
+  });
+
+  const createChampionLeaderboardEntry = (
+    championId: string,
+    value: number
+  ): ChampionLeaderboardEntry => {
+    const stats = recentChampionStats[championId];
+    return {
+      championId,
+      championName: championNames[parseInt(championId)] || "Unknown",
+      value,
+      numberOfGames: stats.picks,
+      winRate: stats.picks > 0 ? stats.wins / stats.picks : 0,
+    };
+  };
+
+  // Filter out champions that haven't been played in recent games
+  const recentPlayedChampions = Object.entries(recentChampionStats).filter(
+    ([, stats]) => stats.picks > 0
+  );
+
+  // Most wins in recent games
+  const mostWinsChampion = recentPlayedChampions.reduce(
+    (max, [id, stats]) =>
+      stats.wins >
+      (recentChampionStats[max] ? recentChampionStats[max].wins : 0)
+        ? id
+        : max,
+    recentPlayedChampions[0]?.[0] || "0"
+  );
+
+  // Most played in recent games
+  const mostPlayedChampion = recentPlayedChampions.reduce(
+    (max, [id, stats]) =>
+      stats.picks >
+      (recentChampionStats[max] ? recentChampionStats[max].picks : 0)
+        ? id
+        : max,
+    recentPlayedChampions[0]?.[0] || "0"
+  );
+
+  // Most banned in recent games
+  const mostBannedChampion = Object.entries(recentChampionStats).reduce(
+    (max, [id, stats]) =>
+      stats.bans >
+      (recentChampionStats[max] ? recentChampionStats[max].bans : 0)
+        ? id
+        : max,
+    Object.keys(recentChampionStats)[0] || "0"
+  );
+
+  // Most losses in recent games (picks - wins)
+  const mostLossesChampion = recentPlayedChampions.reduce(
+    (max, [id, stats]) => {
+      const currentLosses = stats.picks - stats.wins;
+      const maxLosses = recentChampionStats[max]
+        ? recentChampionStats[max].picks - recentChampionStats[max].wins
+        : 0;
+      return currentLosses > maxLosses ? id : max;
+    },
+    recentPlayedChampions[0]?.[0] || "0"
+  );
+
+  const championLeaderboard: ChampionLeaderboard = {
+    mostWins: createChampionLeaderboardEntry(
+      mostWinsChampion,
+      recentChampionStats[mostWinsChampion].wins
+    ),
+    mostPlayed: createChampionLeaderboardEntry(
+      mostPlayedChampion,
+      recentChampionStats[mostPlayedChampion].picks
+    ),
+    mostBanned: createChampionLeaderboardEntry(
+      mostBannedChampion,
+      recentChampionStats[mostBannedChampion].bans
+    ),
+    mostLosses: createChampionLeaderboardEntry(
+      mostLossesChampion,
+      recentChampionStats[mostLossesChampion].picks -
+        recentChampionStats[mostLossesChampion].wins
+    ),
+  };
+
   return {
     gamesPerMonth: paddedGamesPerMonth,
     blueSide,
@@ -726,6 +866,7 @@ export function processDataAll(matches: any, legends: any) {
     lastGame: latestDate ? latestDate.toISOString() : null, // Latest game date as string (YYYY-MM-DD)
     mostRecentGameTimestamp, // Timestamp of the most recent game
     topRecentPlayer: topRecentPlayer ? Number(topRecentPlayer) : null, // Player ID with most wins in recent matches
-    leaderboard, // Include the leaderboard data
+    leaderboard, // Include the leaderboard data,
+    championLeaderboard, // Include the champion leaderboard data
   };
 }

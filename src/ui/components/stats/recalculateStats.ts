@@ -82,7 +82,7 @@ export const recalculateStats = async (): Promise<void> => {
 
     // Calculate and save role leaderboard
     console.log("Calculating and saving role leaderboard...");
-    const NUMBER_OF_GAMES_TO_CONSIDER = 5;
+    const NUMBER_OF_GAMES_TO_CONSIDER = 10;
     const { roleLeaderboard, averageStatsByRoleAByAccountIdInLastGames } =
       calculateRoleLeaderboard(result, legends, NUMBER_OF_GAMES_TO_CONSIDER);
 
