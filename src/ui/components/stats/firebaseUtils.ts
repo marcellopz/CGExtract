@@ -48,6 +48,21 @@ export async function saveRoleStats(stats: unknown) {
   await set(child(dbRef, `pre-processed-data/role-stats`), stats);
 }
 
+export async function saveRoleOnAllReducedParticipant(
+  matchId: string,
+  participantId: number,
+  role: "top" | "jungle" | "mid" | "adc" | "support"
+) {
+  console.log(matchId, participantId, role);
+  await set(
+    child(
+      dbRef,
+      `pre-processed-data/all-reduced/${matchId}/participants/${participantId}/role`
+    ),
+    role
+  );
+}
+
 export async function saveRoleLeaderboard(stats: unknown) {
   await set(child(dbRef, `pre-processed-data/role-leaderboard`), stats);
 }

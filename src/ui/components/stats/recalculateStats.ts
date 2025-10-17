@@ -11,6 +11,7 @@ import {
   saveAverageStatsByRoleAByAccountIdInLastGames,
   saveRoleLeaderboard,
   saveRoleStats,
+  saveRoleOnAllReducedParticipant,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
@@ -20,6 +21,7 @@ import {
 import {
   calculateRoleLeaderboard,
   calculateRoleStats,
+  type MatchRolesObj,
 } from "./role-processing";
 
 // Main RecalculateStats function
@@ -29,12 +31,41 @@ export const recalculateStats = async (): Promise<void> => {
 
     // Get match roles and player data
     console.log("Fetching match roles and player data...");
-    const matchRoles = await getMatchRoles();
-    const players = await getMatchesByPlayer();
-    const legends = await getPlayers();
+    const [matchRoles, players, legends, fullMatches, timelines, allMatches] =
+      await Promise.all([
+        getMatchRoles(),
+        getMatchesByPlayer(),
+        getPlayers(),
+        getFullMatches(),
+        getTimelines(),
+        getMatches(),
+      ]);
 
-    if (!players) {
+    if (!players || !fullMatches || !timelines || !allMatches) {
       throw new Error("No player data found");
+    }
+
+    for (const [matchId, roles] of Object.entries(
+      matchRoles as MatchRolesObj
+    )) {
+      const match = allMatches[matchId];
+      for (const [summonerId, role] of Object.entries(roles)) {
+        const playerParticipant = match.participants.find(
+          (participant) => participant.summonerId === Number(summonerId)
+        );
+        if (
+          playerParticipant &&
+          role &&
+          playerParticipant.participantId &&
+          matchId
+        ) {
+          saveRoleOnAllReducedParticipant(
+            matchId,
+            Number(playerParticipant.participantId) - 1,
+            role
+          );
+        }
+      }
     }
 
     const playerIds = Object.keys(players);
@@ -48,26 +79,19 @@ export const recalculateStats = async (): Promise<void> => {
     // Save individual player stats
     console.log("Saving individual player stats...");
     for (const player of processedDataPerPlayer) {
-      await savePlayerStats(player);
+      savePlayerStats(player);
     }
 
     // Get all matches and process overall stats
     console.log("Processing overall statistics...");
-    const allMatches = await getMatches();
-    if (!allMatches) {
-      throw new Error("No match data found");
-    }
 
     const processedDataAll = processDataAll(allMatches, legends);
-    await saveOverallStats(processedDataAll);
+    saveOverallStats(processedDataAll);
 
     // Process and save player pairs
     console.log("Processing player pairs...");
     const processedPairs = processPlayerPairs(allMatches);
-    await savePlayerPairs(processedPairs);
-
-    const fullMatches = await getFullMatches();
-    const timelines = await getTimelines();
+    savePlayerPairs(processedPairs);
 
     // Calculate and save role stats
     console.log("Calculating and saving role stats...");
@@ -78,7 +102,7 @@ export const recalculateStats = async (): Promise<void> => {
       legends
     );
 
-    await saveRoleStats(result);
+    saveRoleStats(result);
 
     // Calculate and save role leaderboard
     console.log("Calculating and saving role leaderboard...");
@@ -86,8 +110,8 @@ export const recalculateStats = async (): Promise<void> => {
     const { roleLeaderboard, averageStatsByRoleAByAccountIdInLastGames } =
       calculateRoleLeaderboard(result, legends, NUMBER_OF_GAMES_TO_CONSIDER);
 
-    await saveRoleLeaderboard(roleLeaderboard);
-    await saveAverageStatsByRoleAByAccountIdInLastGames(
+    saveRoleLeaderboard(roleLeaderboard);
+    saveAverageStatsByRoleAByAccountIdInLastGames(
       averageStatsByRoleAByAccountIdInLastGames
     );
 
