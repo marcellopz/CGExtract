@@ -85,11 +85,20 @@ const reduceFile = (matchObj: GameDetails) => {
   reduced.gameDuration = matchObj.gameDuration;
   reduced.gameVersion = matchObj.gameVersion;
 
+  // Calculate total gold earned by each team
+  const goldByTeam = matchObj.participants.reduce((acc, p) => {
+    acc[p.teamId] = (acc[p.teamId] || 0) + p.stats.goldEarned;
+    return acc;
+  }, {} as Record<number, number>);
+
   // Remove unwanted properties from teams
   const teams = matchObj.teams.map((team) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { dominionVictoryScore, vilemawKills, ...cleanTeam } = team;
-    return cleanTeam;
+    return {
+      ...cleanTeam,
+      goldEarned: goldByTeam[team.teamId] || 0,
+    };
   });
   reduced.teams = teams;
 

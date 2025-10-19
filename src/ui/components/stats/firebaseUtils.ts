@@ -163,3 +163,17 @@ export async function getOverviewData() {
     };
   }
 }
+
+export async function saveGoldEarnedByTeam(
+  matchId: string,
+  teamId: number,
+  goldEarned: number
+) {
+  await set(
+    child(
+      dbRef,
+      `pre-processed-data/all-reduced/${matchId}/teams/${teamId}/goldEarned`
+    ),
+    goldEarned
+  );
+}
