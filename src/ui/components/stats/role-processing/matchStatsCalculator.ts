@@ -20,6 +20,53 @@ import {
   calculateRoamsSuccessful,
 } from "./utils";
 
+const weightsOffSupport = {
+  kills: 10,
+  deaths: -7,
+  assists: 4,
+  cs: 0.2,
+  visionScore: 0.8,
+};
+
+const weightsSupport = {
+  kills: 5,
+  deaths: -7,
+  assists: 5,
+  cs: 0.08,
+  visionScore: 1,
+};
+
+/**
+ * Calculate performance score for a player based on their stats
+ * @param kills - Number of kills
+ * @param deaths - Number of deaths
+ * @param assists - Number of assists
+ * @param totalCS - Total minions killed (minions + neutral)
+ * @param visionScore - Vision score
+ * @param gameDuration - Game duration in seconds
+ * @param role - Player role
+ * @returns Performance score (multiplied by 100)
+ */
+export function calculateScore(
+  kills: number,
+  deaths: number,
+  assists: number,
+  totalCS: number,
+  visionScore: number,
+  gameDuration: number,
+  role: string
+): number {
+  const weights = role === "support" ? weightsSupport : weightsOffSupport;
+  const score =
+    (kills * weights.kills +
+      deaths * weights.deaths +
+      assists * weights.assists +
+      totalCS * weights.cs +
+      visionScore * weights.visionScore) /
+    gameDuration;
+  return score * 100;
+}
+
 /**
  * Calculate comprehensive stats for all players in a single match
  *
@@ -180,6 +227,19 @@ export function calculateMatchStats(
       damageShare: calculateDamageShare(
         stats.totalDamageDealtToChampions,
         teamTotals[participant.teamId].damage
+      ),
+
+      // ============================================================
+      // SECTION 10.5: Performance Score
+      // ============================================================
+      score: calculateScore(
+        stats.kills,
+        stats.deaths,
+        stats.assists,
+        stats.totalMinionsKilled + stats.neutralMinionsKilled,
+        stats.visionScore,
+        match.gameDuration,
+        role
       ),
 
       // ============================================================

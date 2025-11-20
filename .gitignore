@@ -25,3 +25,5 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env-s2
+.env-s3

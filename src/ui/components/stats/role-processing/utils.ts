@@ -453,6 +453,7 @@ export const initializeParticipantCalculatedAverageStats: ParticipantCalculatedA
     damagePerGold: 0,
     objectiveControlRate: 0,
     roamsSuccessful: 0,
+    score: 0,
   };
 
 export function calculateAverageStats(
@@ -547,6 +548,7 @@ export function calculateAverageStats(
     averageStats.damagePerGold += stat.damagePerGold;
     averageStats.objectiveControlRate += stat.objectiveControlRate ?? 0;
     averageStats.roamsSuccessful += stat.roamsSuccessful ?? 0;
+    averageStats.score += stat.score;
   }
 
   // Calculate averages (divide by number of games)
@@ -623,7 +625,7 @@ export function calculateAverageStats(
   averageStats.damagePerGold /= numberOfGames;
   averageStats.objectiveControlRate /= numberOfGames;
   averageStats.roamsSuccessful /= numberOfGames;
-
+  averageStats.score /= numberOfGames;
   return averageStats;
 }
 

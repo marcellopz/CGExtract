@@ -93,6 +93,9 @@ export type ParticipantCalculatedStats = {
   killParticipation: number; // (kills + assists) / teamKills
   damageShare: number; // totalDamageDealtToChampions / teamDamage
 
+  // Performance score
+  score: number; // weighted performance score based on kills, deaths, assists, CS, and vision score
+
   // Early game stats (@10 min)
   goldAt10: number;
   xpAt10: number;
