@@ -617,10 +617,6 @@ export function calculateAverageStats(
   averageStats.firstBlood /= gamesToConsider;
   averageStats.firstBloodKill /= gamesToConsider;
   averageStats.firstBloodAssist /= gamesToConsider;
-  averageStats.doubleKills /= gamesToConsider;
-  averageStats.tripleKills /= gamesToConsider;
-  averageStats.quadraKills /= gamesToConsider;
-  averageStats.pentaKills /= gamesToConsider;
   averageStats.turretKills /= gamesToConsider;
   averageStats.inhibitorKills /= gamesToConsider;
   averageStats.firstTowerKill /= gamesToConsider;
