@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getDatabase, ref, get, child, set } from "firebase/database";
+import type { MvpPlayers } from "./stats-tab-stuff/calculate-mvp";
 
 // Get database instance (using existing Firebase config)
 const db = getDatabase();
@@ -46,6 +47,10 @@ export async function savePlayerPairs(pairs: unknown) {
 
 export async function saveRoleStats(stats: unknown) {
   await set(child(dbRef, `pre-processed-data/role-stats`), stats);
+}
+
+export async function saveMVPPlayers(players: MvpPlayers) {
+  await set(child(dbRef, `pre-processed-data/mvp-players`), players);
 }
 
 export async function saveRoleOnAllReducedParticipant(

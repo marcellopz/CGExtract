@@ -12,6 +12,7 @@ import {
   saveRoleLeaderboard,
   saveRoleStats,
   saveRoleOnAllReducedParticipant,
+  saveMVPPlayers,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
@@ -23,6 +24,7 @@ import {
   calculateRoleStats,
   type MatchRolesObj,
 } from "./role-processing";
+import { calculateMVP } from "./stats-tab-stuff/calculate-mvp";
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -103,6 +105,9 @@ export const recalculateStats = async (): Promise<void> => {
     );
 
     saveRoleStats(result);
+
+    const mvpPlayers = calculateMVP(result);
+    saveMVPPlayers(mvpPlayers);
 
     // Calculate and save role leaderboard
     console.log("Calculating and saving role leaderboard...");
