@@ -268,6 +268,7 @@ type LeaderboardEntry = {
   value: number;
   legend_name: string;
   legend_id: string;
+  extra?: string;
 };
 
 type OverallPlayerLeaderboard = {
@@ -660,7 +661,8 @@ export function processDataAll(matches: any, legends: any) {
   // Calculate leaderboards
   const createLeaderboardEntry = (
     playerId: string,
-    value: number
+    value: number,
+    extra?: string
   ): LeaderboardEntry => {
     const legend = legends
       ? Object.values(legends).find(
@@ -672,6 +674,7 @@ export function processDataAll(matches: any, legends: any) {
       value,
       legend_name: legend ? (legend as any).name : "",
       legend_id: legend ? (legend as any).name_id : "",
+      extra: extra ?? "",
     };
   };
 
@@ -684,7 +687,11 @@ export function processDataAll(matches: any, legends: any) {
   const winRateLeaderboard = Object.entries(playerStats)
     .filter(([, stats]) => stats.games >= 5)
     .map(([playerId, stats]) =>
-      createLeaderboardEntry(playerId, stats.wins / stats.games)
+      createLeaderboardEntry(
+        playerId,
+        stats.wins / stats.games,
+        stats.games.toString()
+      )
     )
     .sort((a, b) => b.value - a.value);
 
@@ -700,7 +707,11 @@ export function processDataAll(matches: any, legends: any) {
         LAST_N_GAMES_FOR_LEADERBOARD
       );
       const wins = lastNGames.filter((w) => w).length;
-      return createLeaderboardEntry(playerId, wins / lastNGames.length);
+      return createLeaderboardEntry(
+        playerId,
+        wins / lastNGames.length,
+        lastNGames.length.toString()
+      );
     })
     .sort((a, b) => b.value - a.value);
 

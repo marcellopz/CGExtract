@@ -13,6 +13,7 @@ import {
   saveRoleStats,
   saveRoleOnAllReducedParticipant,
   saveMVPPlayers,
+  savePlayersAverageRoleStats,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
@@ -25,6 +26,7 @@ import {
   type MatchRolesObj,
 } from "./role-processing";
 import { calculateMVP } from "./stats-tab-stuff/calculate-mvp";
+import { calculatePlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -97,25 +99,39 @@ export const recalculateStats = async (): Promise<void> => {
 
     // Calculate and save role stats
     console.log("Calculating and saving role stats...");
-    const result = calculateRoleStats(
+    const allMatchRoleStats = calculateRoleStats(
       fullMatches,
       timelines,
       matchRoles,
       legends
     );
 
-    saveRoleStats(result);
+    saveRoleStats(allMatchRoleStats);
 
-    const mvpPlayers = calculateMVP(result);
+    console.log("Calculating and saving players average role stats...");
+    const playersAverageRoleStats =
+      calculatePlayersAverageRoleStats(allMatchRoleStats);
+    savePlayersAverageRoleStats(playersAverageRoleStats);
+
+    console.log("Calculating and saving MVP players...");
+    const mvpPlayers = calculateMVP(allMatchRoleStats);
     saveMVPPlayers(mvpPlayers);
 
     // Calculate and save role leaderboard
     console.log("Calculating and saving role leaderboard...");
     const NUMBER_OF_GAMES_TO_CONSIDER = 10;
     const { roleLeaderboard, averageStatsByRoleAByAccountIdInLastGames } =
-      calculateRoleLeaderboard(result, legends, NUMBER_OF_GAMES_TO_CONSIDER);
+      calculateRoleLeaderboard(
+        allMatchRoleStats,
+        legends,
+        NUMBER_OF_GAMES_TO_CONSIDER
+      );
 
+    console.log("Saving role leaderboard...");
     saveRoleLeaderboard(roleLeaderboard);
+    console.log(
+      "Saving average stats by role A by account ID in last games..."
+    );
     saveAverageStatsByRoleAByAccountIdInLastGames(
       averageStatsByRoleAByAccountIdInLastGames
     );

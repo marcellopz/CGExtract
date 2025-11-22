@@ -460,10 +460,17 @@ export function calculateAverageStats(
   matchStats: ParticipantStatsRole[],
   numberOfGames: number
 ): ParticipantCalculatedAverageStats | null {
-  const sortedMatchStats = matchStats.sort((a, b) => b.gameDate - a.gameDate);
-  const lastMatches = sortedMatchStats.slice(0, numberOfGames);
+  if (!matchStats.length) return null;
 
-  if (lastMatches.length < numberOfGames) return null;
+  const sortedMatchStats = matchStats.sort((a, b) => b.gameDate - a.gameDate);
+  const gamesToConsider =
+    numberOfGames === -1 ? sortedMatchStats.length : numberOfGames;
+
+  if (gamesToConsider <= 0) return null;
+
+  const lastMatches = sortedMatchStats.slice(0, gamesToConsider);
+
+  if (lastMatches.length < gamesToConsider) return null;
 
   // Initialize with zeros - create a NEW object for each calculation
   const averageStats: ParticipantCalculatedAverageStats = {
@@ -552,80 +559,80 @@ export function calculateAverageStats(
   }
 
   // Calculate averages (divide by number of games)
-  averageStats.wins /= numberOfGames;
-  averageStats.kills /= numberOfGames;
-  averageStats.deaths /= numberOfGames;
-  averageStats.assists /= numberOfGames;
-  averageStats.kda /= numberOfGames;
-  averageStats.totalMinionsKilled /= numberOfGames;
-  averageStats.neutralMinionsKilled /= numberOfGames;
-  averageStats.totalCS /= numberOfGames;
-  averageStats.csPerMinute /= numberOfGames;
-  averageStats.goldEarned /= numberOfGames;
-  averageStats.goldPerMinute /= numberOfGames;
-  averageStats.totalDamageDealtToChampions /= numberOfGames;
-  averageStats.damagePerMinute /= numberOfGames;
-  averageStats.physicalDamageDealtToChampions /= numberOfGames;
-  averageStats.magicDamageDealtToChampions /= numberOfGames;
-  averageStats.trueDamageDealtToChampions /= numberOfGames;
-  averageStats.visionScore /= numberOfGames;
-  averageStats.visionScorePerMinute /= numberOfGames;
-  averageStats.wardsPlaced /= numberOfGames;
-  averageStats.wardsKilled /= numberOfGames;
-  averageStats.visionWardsBoughtInGame /= numberOfGames;
-  averageStats.damageDealtToObjectives /= numberOfGames;
-  averageStats.damageDealtToTurrets /= numberOfGames;
-  averageStats.totalDamageTaken /= numberOfGames;
-  averageStats.damageSelfMitigated /= numberOfGames;
-  averageStats.totalHeal /= numberOfGames;
-  averageStats.timeCCingOthers /= numberOfGames;
-  averageStats.totalTimeCrowdControlDealt /= numberOfGames;
-  averageStats.teamKills /= numberOfGames;
-  averageStats.teamDamage /= numberOfGames;
-  averageStats.killParticipation /= numberOfGames;
-  averageStats.damageShare /= numberOfGames;
-  averageStats.goldAt10 /= numberOfGames;
-  averageStats.xpAt10 /= numberOfGames;
-  averageStats.csAt10 /= numberOfGames;
-  averageStats.levelAt10 /= numberOfGames;
-  averageStats.goldDiffAt10 /= numberOfGames;
-  averageStats.xpDiffAt10 /= numberOfGames;
-  averageStats.csDiffAt10 /= numberOfGames;
-  averageStats.goldAt15 /= numberOfGames;
-  averageStats.xpAt15 /= numberOfGames;
-  averageStats.csAt15 /= numberOfGames;
-  averageStats.levelAt15 /= numberOfGames;
-  averageStats.goldDiffAt15 /= numberOfGames;
-  averageStats.xpDiffAt15 /= numberOfGames;
-  averageStats.csDiffAt15 /= numberOfGames;
-  averageStats.goldAt20 /= numberOfGames;
-  averageStats.xpAt20 /= numberOfGames;
-  averageStats.csAt20 /= numberOfGames;
-  averageStats.levelAt20 /= numberOfGames;
-  averageStats.goldDiffAt20 /= numberOfGames;
-  averageStats.xpDiffAt20 /= numberOfGames;
-  averageStats.csDiffAt20 /= numberOfGames;
-  averageStats.soloKills /= numberOfGames;
+  averageStats.wins /= gamesToConsider;
+  averageStats.kills /= gamesToConsider;
+  averageStats.deaths /= gamesToConsider;
+  averageStats.assists /= gamesToConsider;
+  averageStats.kda /= gamesToConsider;
+  averageStats.totalMinionsKilled /= gamesToConsider;
+  averageStats.neutralMinionsKilled /= gamesToConsider;
+  averageStats.totalCS /= gamesToConsider;
+  averageStats.csPerMinute /= gamesToConsider;
+  averageStats.goldEarned /= gamesToConsider;
+  averageStats.goldPerMinute /= gamesToConsider;
+  averageStats.totalDamageDealtToChampions /= gamesToConsider;
+  averageStats.damagePerMinute /= gamesToConsider;
+  averageStats.physicalDamageDealtToChampions /= gamesToConsider;
+  averageStats.magicDamageDealtToChampions /= gamesToConsider;
+  averageStats.trueDamageDealtToChampions /= gamesToConsider;
+  averageStats.visionScore /= gamesToConsider;
+  averageStats.visionScorePerMinute /= gamesToConsider;
+  averageStats.wardsPlaced /= gamesToConsider;
+  averageStats.wardsKilled /= gamesToConsider;
+  averageStats.visionWardsBoughtInGame /= gamesToConsider;
+  averageStats.damageDealtToObjectives /= gamesToConsider;
+  averageStats.damageDealtToTurrets /= gamesToConsider;
+  averageStats.totalDamageTaken /= gamesToConsider;
+  averageStats.damageSelfMitigated /= gamesToConsider;
+  averageStats.totalHeal /= gamesToConsider;
+  averageStats.timeCCingOthers /= gamesToConsider;
+  averageStats.totalTimeCrowdControlDealt /= gamesToConsider;
+  averageStats.teamKills /= gamesToConsider;
+  averageStats.teamDamage /= gamesToConsider;
+  averageStats.killParticipation /= gamesToConsider;
+  averageStats.damageShare /= gamesToConsider;
+  averageStats.goldAt10 /= gamesToConsider;
+  averageStats.xpAt10 /= gamesToConsider;
+  averageStats.csAt10 /= gamesToConsider;
+  averageStats.levelAt10 /= gamesToConsider;
+  averageStats.goldDiffAt10 /= gamesToConsider;
+  averageStats.xpDiffAt10 /= gamesToConsider;
+  averageStats.csDiffAt10 /= gamesToConsider;
+  averageStats.goldAt15 /= gamesToConsider;
+  averageStats.xpAt15 /= gamesToConsider;
+  averageStats.csAt15 /= gamesToConsider;
+  averageStats.levelAt15 /= gamesToConsider;
+  averageStats.goldDiffAt15 /= gamesToConsider;
+  averageStats.xpDiffAt15 /= gamesToConsider;
+  averageStats.csDiffAt15 /= gamesToConsider;
+  averageStats.goldAt20 /= gamesToConsider;
+  averageStats.xpAt20 /= gamesToConsider;
+  averageStats.csAt20 /= gamesToConsider;
+  averageStats.levelAt20 /= gamesToConsider;
+  averageStats.goldDiffAt20 /= gamesToConsider;
+  averageStats.xpDiffAt20 /= gamesToConsider;
+  averageStats.csDiffAt20 /= gamesToConsider;
+  averageStats.soloKills /= gamesToConsider;
   // Convert boolean counts to ratios (0-1 representing percentage of games)
-  averageStats.firstBlood /= numberOfGames;
-  averageStats.firstBloodKill /= numberOfGames;
-  averageStats.firstBloodAssist /= numberOfGames;
-  averageStats.doubleKills /= numberOfGames;
-  averageStats.tripleKills /= numberOfGames;
-  averageStats.quadraKills /= numberOfGames;
-  averageStats.pentaKills /= numberOfGames;
-  averageStats.turretKills /= numberOfGames;
-  averageStats.inhibitorKills /= numberOfGames;
-  averageStats.firstTowerKill /= numberOfGames;
-  averageStats.firstTowerAssist /= numberOfGames;
-  averageStats.killsAndAssistsPre15 /= numberOfGames;
-  averageStats.teamKillsPre15 /= numberOfGames;
-  averageStats.earlyGameKP /= numberOfGames;
-  averageStats.damagePerDeath /= numberOfGames;
-  averageStats.damagePerGold /= numberOfGames;
-  averageStats.objectiveControlRate /= numberOfGames;
-  averageStats.roamsSuccessful /= numberOfGames;
-  averageStats.score /= numberOfGames;
+  averageStats.firstBlood /= gamesToConsider;
+  averageStats.firstBloodKill /= gamesToConsider;
+  averageStats.firstBloodAssist /= gamesToConsider;
+  averageStats.doubleKills /= gamesToConsider;
+  averageStats.tripleKills /= gamesToConsider;
+  averageStats.quadraKills /= gamesToConsider;
+  averageStats.pentaKills /= gamesToConsider;
+  averageStats.turretKills /= gamesToConsider;
+  averageStats.inhibitorKills /= gamesToConsider;
+  averageStats.firstTowerKill /= gamesToConsider;
+  averageStats.firstTowerAssist /= gamesToConsider;
+  averageStats.killsAndAssistsPre15 /= gamesToConsider;
+  averageStats.teamKillsPre15 /= gamesToConsider;
+  averageStats.earlyGameKP /= gamesToConsider;
+  averageStats.damagePerDeath /= gamesToConsider;
+  averageStats.damagePerGold /= gamesToConsider;
+  averageStats.objectiveControlRate /= gamesToConsider;
+  averageStats.roamsSuccessful /= gamesToConsider;
+  averageStats.score /= gamesToConsider;
   return averageStats;
 }
 
