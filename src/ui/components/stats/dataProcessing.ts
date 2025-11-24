@@ -294,6 +294,21 @@ type ChampionLeaderboard = {
   mostLosses: ChampionLeaderboardEntry;
 };
 
+type ChampionStats = Record<string, ChampionStatsEntry>;
+
+type ChampionStatsEntry = {
+  championId: string;
+  championName: string;
+  picks: number;
+  bans: number;
+  wins: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  creepsKilled: number;
+  presence: number;
+};
+
 export function processDataAll(matches: any, legends: any) {
   let gameDurationTotal = 0;
   const blueSide = {
@@ -334,7 +349,7 @@ export function processDataAll(matches: any, legends: any) {
   > = {};
 
   const championNamesArray = Object.keys(championNames);
-  const champions: any = {};
+  const champions: ChampionStats = {};
   championNamesArray.forEach(
     (id) =>
       (champions[id] = {

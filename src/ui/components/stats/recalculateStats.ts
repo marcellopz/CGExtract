@@ -14,6 +14,7 @@ import {
   saveRoleOnAllReducedParticipant,
   saveMVPPlayers,
   savePlayersAverageRoleStats,
+  saveChampionsAverageRoleStats,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
@@ -27,6 +28,7 @@ import {
 } from "./role-processing";
 import { calculateMVP } from "./stats-tab-stuff/calculate-mvp";
 import { calculatePlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
+import { calculateChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -135,6 +137,10 @@ export const recalculateStats = async (): Promise<void> => {
     saveAverageStatsByRoleAByAccountIdInLastGames(
       averageStatsByRoleAByAccountIdInLastGames
     );
+
+    console.log("Calculating and saving champion stats...");
+    const championStats = calculateChampionsAverageRoleStats(allMatchRoleStats);
+    saveChampionsAverageRoleStats(championStats);
 
     console.log("Stats recalculation completed successfully!");
     alert("Stats saved successfully!");

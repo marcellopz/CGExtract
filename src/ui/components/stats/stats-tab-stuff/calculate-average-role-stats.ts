@@ -22,6 +22,7 @@ export type PlayersAverageRoleStats = {
   mid: { [summonerId: string]: PlayerAverageRoleStats };
   adc: { [summonerId: string]: PlayerAverageRoleStats };
   support: { [summonerId: string]: PlayerAverageRoleStats };
+  all: { [summonerId: string]: PlayerAverageRoleStats };
 };
 
 export function calculatePlayersAverageRoleStats(
@@ -33,11 +34,12 @@ export function calculatePlayersAverageRoleStats(
     mid: {},
     adc: {},
     support: {},
+    all: {},
   };
 
   // Collect matches by role and player
   const matchesByRole: Record<
-    keyof PlayersAverageRoleStats,
+    keyof Omit<PlayersAverageRoleStats, "all">,
     Record<string, ParticipantStatsRole[]>
   > = {
     top: {},
@@ -47,21 +49,32 @@ export function calculatePlayersAverageRoleStats(
     support: {},
   };
 
+  // Collect all matches for each player (across all roles)
+  const allMatchesByPlayer: Record<string, ParticipantStatsRole[]> = {};
+
   for (const matchStats of Object.values(allMatchRoleStats)) {
     for (const role of Object.keys(matchStats) as Array<
-      keyof PlayersAverageRoleStats
+      keyof Omit<PlayersAverageRoleStats, "all">
     >) {
       for (const summonerId of Object.keys(matchStats[role])) {
+        // Collect by role
         if (!matchesByRole[role][summonerId]) {
           matchesByRole[role][summonerId] = [];
         }
         matchesByRole[role][summonerId].push(matchStats[role][summonerId]);
+
+        // Collect all matches for this player (across all roles)
+        if (!allMatchesByPlayer[summonerId]) {
+          allMatchesByPlayer[summonerId] = [];
+        }
+        allMatchesByPlayer[summonerId].push(matchStats[role][summonerId]);
       }
     }
   }
 
+  // Calculate stats for each role
   for (const role of Object.keys(matchesByRole) as Array<
-    keyof PlayersAverageRoleStats
+    keyof Omit<PlayersAverageRoleStats, "all">
   >) {
     for (const [summonerId, matches] of Object.entries(matchesByRole[role])) {
       if (!matches.length) continue;
@@ -87,6 +100,30 @@ export function calculatePlayersAverageRoleStats(
         averageStats,
       };
     }
+  }
+
+  // Calculate stats for all games (across all roles)
+  for (const [summonerId, matches] of Object.entries(allMatchesByPlayer)) {
+    if (!matches.length) continue;
+
+    const sortedMatches = [...matches].sort((a, b) => b.gameDate - a.gameDate);
+    const averageStats =
+      calculateAverageStats(sortedMatches, -1) ||
+      (null as ParticipantCalculatedAverageStats | null);
+
+    if (!averageStats) continue;
+
+    const mostRecentMatch = sortedMatches[0];
+
+    playersAverageRoleStats.all[summonerId] = {
+      playerInfo: {
+        summonerId: mostRecentMatch.summonerId,
+        gameName: mostRecentMatch.gameName,
+        tagLine: mostRecentMatch.tagLine,
+        numberOfGames: sortedMatches.length,
+      },
+      averageStats,
+    };
   }
 
   return playersAverageRoleStats;

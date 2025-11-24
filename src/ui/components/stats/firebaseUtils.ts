@@ -2,6 +2,7 @@
 import { getDatabase, ref, get, child, set } from "firebase/database";
 import type { MvpPlayers } from "./stats-tab-stuff/calculate-mvp";
 import type { PlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
+import type { ChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
 
 // Get database instance (using existing Firebase config)
 const db = getDatabase();
@@ -90,6 +91,15 @@ export async function saveAverageStatsByRoleAByAccountIdInLastGames(
       dbRef,
       `pre-processed-data/average-stats-by-role-and-by-account-id-in-last-games`
     ),
+    stats
+  );
+}
+
+export async function saveChampionsAverageRoleStats(
+  stats: ChampionsAverageRoleStats
+) {
+  await set(
+    child(dbRef, `pre-processed-data/champions-average-role-stats`),
     stats
   );
 }
