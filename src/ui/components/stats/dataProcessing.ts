@@ -309,7 +309,11 @@ type ChampionStatsEntry = {
   presence: number;
 };
 
-export function processDataAll(matches: any, legends: any) {
+export function processDataAll(
+  matches: any,
+  legends: any,
+  timelines?: Record<string, any>
+) {
   let gameDurationTotal = 0;
   const blueSide = {
     baronKills: 0,
@@ -322,6 +326,10 @@ export function processDataAll(matches: any, legends: any) {
     riftHeraldKills: 0,
     towerKills: 0,
     wins: 0,
+    kills: 0,
+    voidGrubs: 0,
+    elderDragons: 0,
+    atakhans: 0,
   };
   const redSide = {
     baronKills: 0,
@@ -334,6 +342,10 @@ export function processDataAll(matches: any, legends: any) {
     riftHeraldKills: 0,
     towerKills: 0,
     wins: 0,
+    kills: 0,
+    voidGrubs: 0,
+    elderDragons: 0,
+    atakhans: 0,
   };
 
   // Track player statistics for leaderboard
@@ -458,7 +470,7 @@ export function processDataAll(matches: any, legends: any) {
     ).getTime();
   }
 
-  Object.values(matches).forEach((match: any) => {
+  Object.entries(matches).forEach(([matchId, match]: [string, any]) => {
     gameDurationTotal += match.gameDuration;
 
     // Update game duration histogram (group in 3-minute intervals)
@@ -474,6 +486,14 @@ export function processDataAll(matches: any, legends: any) {
     match.participants.forEach((p: any) => {
       teamKills[p.teamId] = (teamKills[p.teamId] || 0) + p.stats.kills;
     });
+
+    // Add team kills to blueSide/redSide
+    if (teamKills[100]) {
+      blueSide.kills += teamKills[100];
+    }
+    if (teamKills[200]) {
+      redSide.kills += teamKills[200];
+    }
 
     match.participants.forEach((p: any) => {
       const playerId = p.summonerId.toString();
@@ -508,32 +528,80 @@ export function processDataAll(matches: any, legends: any) {
       champions[p.championId].creepsKilled += p.stats.totalCs;
     });
     const blue = match.teams.filter((t: any) => t.teamId === 100)[0];
-    blueSide.baronKills += blue.baronKills;
-    blueSide.dragonKills += blue.dragonKills;
-    blueSide.firstBlood += blue.firstBlood;
-    blueSide.firstBaron += blue.firstBaron;
-    blueSide.firstDragon += blue.firstDargon;
-    blueSide.firstTower += blue.firstTower;
-    blueSide.firstInhibitor += blue.firstInhibitor;
-    blueSide.riftHeraldKills += blue.riftHeraldKills;
-    blueSide.towerKills += blue.towerKills;
+    blueSide.baronKills += blue.baronKills || 0;
+    blueSide.dragonKills += blue.dragonKills || 0;
+    blueSide.firstBlood += blue.firstBlood || 0;
+    blueSide.firstBaron += blue.firstBaron || 0;
+    blueSide.firstDragon += blue.firstDargon || 0;
+    blueSide.firstTower += blue.firstTower || 0;
+    blueSide.firstInhibitor += blue.firstInhibitor || 0;
+    blueSide.riftHeraldKills += blue.riftHeraldKills || 0;
+    blueSide.towerKills += blue.towerKills || 0;
     blueSide.wins += blue.win === "Win" ? 1 : 0;
+    // Add new stats if they exist in the team object
+    blueSide.voidGrubs += blue.hordeKills || 0;
+
+    // Process atakhan and elder dragon kills from timeline
+    if (timelines) {
+      // Try multiple possible keys for timeline lookup
+      const timeline =
+        timelines[matchId] ||
+        timelines[`match${matchId}`] ||
+        timelines[match.gameId?.toString()] ||
+        timelines[match.gameId];
+      if (timeline && timeline.frames) {
+        for (const frame of timeline.frames) {
+          if (frame.events) {
+            for (const event of frame.events) {
+              if (event.type === "ELITE_MONSTER_KILL") {
+                // Participants 1-5 are team 100 (blue), 6-10 are team 200 (red)
+                const teamId = event.killerId > 5 ? 200 : 100;
+
+                // Check for atakhan kills
+                if (event.monsterType === "ATAKHAN") {
+                  if (teamId === 100) {
+                    blueSide.atakhans += 1;
+                  } else {
+                    redSide.atakhans += 1;
+                  }
+                }
+
+                // Check for elder dragon kills (monsterType is DRAGON, monsterSubType is ELDER_DRAGON)
+                if (
+                  event.monsterType === "DRAGON" &&
+                  event.monsterSubType === "ELDER_DRAGON"
+                ) {
+                  if (teamId === 100) {
+                    blueSide.elderDragons += 1;
+                  } else {
+                    redSide.elderDragons += 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     blue.bans?.forEach((b: any) => {
       if (b.championId < 0) return;
       champions[b.championId].bans += 1;
     });
 
     const red = match.teams.filter((t: any) => t.teamId === 200)[0];
-    redSide.baronKills += red.baronKills;
-    redSide.dragonKills += red.dragonKills;
-    redSide.firstBlood += red.firstBlood;
-    redSide.firstBaron += red.firstBaron;
-    redSide.firstDragon += red.firstDargon;
-    redSide.firstTower += red.firstTower;
-    redSide.firstInhibitor += red.firstInhibitor;
-    redSide.riftHeraldKills += red.riftHeraldKills;
-    redSide.towerKills += red.towerKills;
+    redSide.baronKills += red.baronKills || 0;
+    redSide.dragonKills += red.dragonKills || 0;
+    redSide.firstBlood += red.firstBlood || 0;
+    redSide.firstBaron += red.firstBaron || 0;
+    redSide.firstDragon += red.firstDargon || 0;
+    redSide.firstTower += red.firstTower || 0;
+    redSide.firstInhibitor += red.firstInhibitor || 0;
+    redSide.riftHeraldKills += red.riftHeraldKills || 0;
+    redSide.towerKills += red.towerKills || 0;
     redSide.wins += red.win === "Win" ? 1 : 0;
+    // Add new stats if they exist in the team object
+    redSide.voidGrubs += red.hordeKills || 0;
+    // Note: atakhans and elderDragons are processed from timeline above (in blue side section)
     red.bans?.forEach((b: any) => {
       if (b.championId < 0) return;
       champions[b.championId].bans += 1;

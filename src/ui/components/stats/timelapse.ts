@@ -40,6 +40,7 @@ export type MonsterSubType =
   | "EARTH_DRAGON"
   | "HEXTECH_DRAGON"
   | "CHEMTECH_DRAGON"
+  | "ELDER_DRAGON"
   | "";
 
 /**

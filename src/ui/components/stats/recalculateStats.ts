@@ -105,7 +105,7 @@ export const recalculateStats = async (): Promise<void> => {
     // Get all matches and process overall stats
     console.log("Processing overall statistics...");
 
-    const processedDataAll = processDataAll(allMatches, legends);
+    const processedDataAll = processDataAll(allMatches, legends, timelines);
     saveOverallStats(processedDataAll);
 
     // Process and save player pairs
