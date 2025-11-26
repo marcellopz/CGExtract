@@ -15,6 +15,9 @@ import {
   saveMVPPlayers,
   savePlayersAverageRoleStats,
   saveChampionsAverageRoleStats,
+  getPlayersInitialRanks,
+  getPlayersRankChangeLog,
+  savePlayerRankChangeStats,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
@@ -29,6 +32,7 @@ import {
 import { calculateMVP } from "./stats-tab-stuff/calculate-mvp";
 import { calculatePlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
 import { calculateChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
+import { calculatePlayerRankChangeStats } from "./stats-tab-stuff/calculate-rank-change-stats";
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -37,15 +41,25 @@ export const recalculateStats = async (): Promise<void> => {
 
     // Get match roles and player data
     console.log("Fetching match roles and player data...");
-    const [matchRoles, players, legends, fullMatches, timelines, allMatches] =
-      await Promise.all([
-        getMatchRoles(),
-        getMatchesByPlayer(),
-        getPlayers(),
-        getFullMatches(),
-        getTimelines(),
-        getMatches(),
-      ]);
+    const [
+      matchRoles,
+      players,
+      legends,
+      fullMatches,
+      timelines,
+      allMatches,
+      playersRankChangeLog,
+      playersInitialRanks,
+    ] = await Promise.all([
+      getMatchRoles(),
+      getMatchesByPlayer(),
+      getPlayers(),
+      getFullMatches(),
+      getTimelines(),
+      getMatches(),
+      getPlayersRankChangeLog(),
+      getPlayersInitialRanks(),
+    ]);
 
     if (!players || !fullMatches || !timelines || !allMatches) {
       throw new Error("No player data found");
@@ -121,7 +135,7 @@ export const recalculateStats = async (): Promise<void> => {
 
     // Calculate and save role leaderboard
     console.log("Calculating and saving role leaderboard...");
-    const NUMBER_OF_GAMES_TO_CONSIDER = 10;
+    const NUMBER_OF_GAMES_TO_CONSIDER = 5;
     const { roleLeaderboard, averageStatsByRoleAByAccountIdInLastGames } =
       calculateRoleLeaderboard(
         allMatchRoleStats,
@@ -141,6 +155,15 @@ export const recalculateStats = async (): Promise<void> => {
     console.log("Calculating and saving champion stats...");
     const championStats = calculateChampionsAverageRoleStats(allMatchRoleStats);
     saveChampionsAverageRoleStats(championStats);
+
+    console.log("Calculating and saving player rank change stats...");
+    const playerRankChangeStats = calculatePlayerRankChangeStats(
+      playersRankChangeLog,
+      playersInitialRanks,
+      allMatchRoleStats,
+      legends
+    );
+    savePlayerRankChangeStats(playerRankChangeStats);
 
     console.log("Stats recalculation completed successfully!");
     alert("Stats saved successfully!");

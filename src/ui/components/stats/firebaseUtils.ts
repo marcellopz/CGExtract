@@ -3,6 +3,11 @@ import { getDatabase, ref, get, child, set } from "firebase/database";
 import type { MvpPlayers } from "./stats-tab-stuff/calculate-mvp";
 import type { PlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
 import type { ChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
+import type {
+  PlayersRankChangeLog,
+  PlayersInitialRanks,
+  PlayerRankChangeStats,
+} from "./stats-tab-stuff/calculate-rank-change-stats";
 
 // Get database instance (using existing Firebase config)
 const db = getDatabase();
@@ -104,6 +109,10 @@ export async function saveChampionsAverageRoleStats(
   );
 }
 
+export async function savePlayerRankChangeStats(stats: PlayerRankChangeStats) {
+  await set(child(dbRef, `pre-processed-data/player-rank-change-stats`), stats);
+}
+
 export async function savePlayerStats(player: any) {
   Object.keys(player).forEach(async (tag) => {
     await set(
@@ -201,4 +210,27 @@ export async function saveGoldEarnedByTeam(
     ),
     goldEarned
   );
+}
+
+// Rank change functions
+export async function getPlayersRankChangeLog(): Promise<PlayersRankChangeLog | null> {
+  try {
+    const re = await get(child(dbRef, `player-rank-change-log`));
+    const changeLog = await re.val();
+    return changeLog;
+  } catch (error) {
+    console.error("Error fetching players rank change log:", error);
+    return null;
+  }
+}
+
+export async function getPlayersInitialRanks(): Promise<PlayersInitialRanks | null> {
+  try {
+    const re = await get(child(dbRef, `player-initial-ranks`));
+    const initialRanks = await re.val();
+    return initialRanks;
+  } catch (error) {
+    console.error("Error fetching players initial ranks:", error);
+    return null;
+  }
 }
