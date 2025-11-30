@@ -8,6 +8,7 @@ import type {
   PlayersInitialRanks,
   PlayerRankChangeStats,
 } from "./stats-tab-stuff/calculate-rank-change-stats";
+import type { VictoryStatistics } from "./stats-tab-stuff/calculate-victory-statistics";
 
 // Get database instance (using existing Firebase config)
 const db = getDatabase();
@@ -111,6 +112,10 @@ export async function saveChampionsAverageRoleStats(
 
 export async function savePlayerRankChangeStats(stats: PlayerRankChangeStats) {
   await set(child(dbRef, `pre-processed-data/player-rank-change-stats`), stats);
+}
+
+export async function saveVictoryStatistics(stats: VictoryStatistics) {
+  await set(child(dbRef, `pre-processed-data/victory-statistics`), stats);
 }
 
 export async function savePlayerStats(player: any) {

@@ -18,6 +18,7 @@ import {
   getPlayersInitialRanks,
   getPlayersRankChangeLog,
   savePlayerRankChangeStats,
+  saveVictoryStatistics,
 } from "./firebaseUtils";
 import {
   processDataPlayer,
@@ -33,6 +34,7 @@ import { calculateMVP } from "./stats-tab-stuff/calculate-mvp";
 import { calculatePlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
 import { calculateChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
 import { calculatePlayerRankChangeStats } from "./stats-tab-stuff/calculate-rank-change-stats";
+import { calculateVictoryStatistics } from "./stats-tab-stuff/calculate-victory-statistics";
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -164,6 +166,10 @@ export const recalculateStats = async (): Promise<void> => {
       legends
     );
     savePlayerRankChangeStats(playerRankChangeStats);
+
+    console.log("Calculating and saving victory statistics...");
+    const victoryStats = calculateVictoryStatistics(allMatches, timelines);
+    saveVictoryStatistics(victoryStats);
 
     console.log("Stats recalculation completed successfully!");
     alert("Stats saved successfully!");
