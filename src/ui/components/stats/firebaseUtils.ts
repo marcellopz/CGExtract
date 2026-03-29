@@ -3,6 +3,7 @@ import { getDatabase, ref, get, child, set } from "firebase/database";
 import type { MvpPlayers } from "./stats-tab-stuff/calculate-mvp";
 import type { PlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
 import type { ChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
+import type { MatchRanks } from "./stats-tab-stuff/calculate-match-ranks";
 import type {
   PlayersRankChangeLog,
   PlayersInitialRanks,
@@ -62,26 +63,26 @@ export async function saveMVPPlayers(players: MvpPlayers) {
 }
 
 export async function savePlayersAverageRoleStats(
-  stats: PlayersAverageRoleStats
+  stats: PlayersAverageRoleStats,
 ) {
   await set(
     child(dbRef, `pre-processed-data/players-average-role-stats`),
-    stats
+    stats,
   );
 }
 
 export async function saveRoleOnAllReducedParticipant(
   matchId: string,
   participantId: number,
-  role: "top" | "jungle" | "mid" | "adc" | "support"
+  role: "top" | "jungle" | "mid" | "adc" | "support",
 ) {
-  console.log(matchId, participantId, role);
+  // console.log(matchId, participantId, role);
   await set(
     child(
       dbRef,
-      `pre-processed-data/all-reduced/${matchId}/participants/${participantId}/role`
+      `pre-processed-data/all-reduced/${matchId}/participants/${participantId}/role`,
     ),
-    role
+    role,
   );
 }
 
@@ -90,28 +91,32 @@ export async function saveRoleLeaderboard(stats: unknown) {
 }
 
 export async function saveAverageStatsByRoleAByAccountIdInLastGames(
-  stats: unknown
+  stats: unknown,
 ) {
   await set(
     child(
       dbRef,
-      `pre-processed-data/average-stats-by-role-and-by-account-id-in-last-games`
+      `pre-processed-data/average-stats-by-role-and-by-account-id-in-last-games`,
     ),
-    stats
+    stats,
   );
 }
 
 export async function saveChampionsAverageRoleStats(
-  stats: ChampionsAverageRoleStats
+  stats: ChampionsAverageRoleStats,
 ) {
   await set(
     child(dbRef, `pre-processed-data/champions-average-role-stats`),
-    stats
+    stats,
   );
 }
 
 export async function savePlayerRankChangeStats(stats: PlayerRankChangeStats) {
   await set(child(dbRef, `pre-processed-data/player-rank-change-stats`), stats);
+}
+
+export async function saveMatchRanks(matchRanks: MatchRanks) {
+  await set(child(dbRef, `pre-processed-data/match-ranks`), matchRanks);
 }
 
 export async function saveVictoryStatistics(stats: VictoryStatistics) {
@@ -122,7 +127,7 @@ export async function savePlayerStats(player: any) {
   Object.keys(player).forEach(async (tag) => {
     await set(
       child(dbRef, `pre-processed-data/players/${player.summonerId}/${tag}`),
-      player[tag]
+      player[tag],
     );
   });
   await set(
@@ -132,7 +137,7 @@ export async function savePlayerStats(player: any) {
       summonerName: player.summonerName,
       numberOfMatches: player.numberOfMatches,
       tagLine: player.tagLine,
-    }
+    },
   );
 }
 
@@ -157,7 +162,7 @@ export async function getTotalPlayers(): Promise<number> {
 export async function getNumberOfGames(): Promise<number> {
   try {
     const re = await get(
-      child(dbRef, `pre-processed-data/overall-stats/numberOfGames`)
+      child(dbRef, `pre-processed-data/overall-stats/numberOfGames`),
     );
     const numberOfGames = await re.val();
     return numberOfGames || 0;
@@ -170,7 +175,7 @@ export async function getNumberOfGames(): Promise<number> {
 export async function getLastGameDate(): Promise<string | null> {
   try {
     const re = await get(
-      child(dbRef, `pre-processed-data/overall-stats/lastGame`)
+      child(dbRef, `pre-processed-data/overall-stats/lastGame`),
     );
     const lastGame = await re.val();
     return lastGame || null;
@@ -206,14 +211,14 @@ export async function getOverviewData() {
 export async function saveGoldEarnedByTeam(
   matchId: string,
   teamId: number,
-  goldEarned: number
+  goldEarned: number,
 ) {
   await set(
     child(
       dbRef,
-      `pre-processed-data/all-reduced/${matchId}/teams/${teamId}/goldEarned`
+      `pre-processed-data/all-reduced/${matchId}/teams/${teamId}/goldEarned`,
     ),
-    goldEarned
+    goldEarned,
   );
 }
 

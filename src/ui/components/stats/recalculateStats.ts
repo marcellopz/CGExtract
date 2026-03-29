@@ -18,6 +18,7 @@ import {
   getPlayersInitialRanks,
   getPlayersRankChangeLog,
   savePlayerRankChangeStats,
+  saveMatchRanks,
   saveVictoryStatistics,
 } from "./firebaseUtils";
 import {
@@ -33,8 +34,32 @@ import {
 import { calculateMVP } from "./stats-tab-stuff/calculate-mvp";
 import { calculatePlayersAverageRoleStats } from "./stats-tab-stuff/calculate-average-role-stats";
 import { calculateChampionsAverageRoleStats } from "./stats-tab-stuff/calculate-average-champion-role-stats";
+import { calculateMatchRanks } from "./stats-tab-stuff/calculate-match-ranks";
 import { calculatePlayerRankChangeStats } from "./stats-tab-stuff/calculate-rank-change-stats";
 import { calculateVictoryStatistics } from "./stats-tab-stuff/calculate-victory-statistics";
+
+const revalidateUrl = import.meta.env.VITE_REVALIDATE_URL?.trim();
+const revalidateSecret = import.meta.env.VITE_REVALIDATE_SECRET?.trim();
+
+async function triggerRevalidation(): Promise<void> {
+  if (!revalidateUrl || !revalidateSecret) {
+    console.log("Skipping revalidation: VITE_REVALIDATE_* env vars not set.");
+    return;
+  }
+
+  const response = await fetch(revalidateUrl, {
+    method: "POST",
+    headers: {
+      "x-revalidate-secret": revalidateSecret,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Revalidation failed: ${response.status} ${response.statusText}`
+    );
+  }
+}
 
 // Main RecalculateStats function
 export const recalculateStats = async (): Promise<void> => {
@@ -115,6 +140,16 @@ export const recalculateStats = async (): Promise<void> => {
     const processedPairs = processPlayerPairs(allMatches);
     savePlayerPairs(processedPairs);
 
+    console.log("Calculating and saving match ranks...");
+    const matchRanks = calculateMatchRanks(
+      fullMatches,
+      matchRoles as MatchRolesObj,
+      playersRankChangeLog,
+      playersInitialRanks,
+      legends
+    );
+    saveMatchRanks(matchRanks);
+
     // Calculate and save role stats
     console.log("Calculating and saving role stats...");
     const allMatchRoleStats = calculateRoleStats(
@@ -170,6 +205,9 @@ export const recalculateStats = async (): Promise<void> => {
     console.log("Calculating and saving victory statistics...");
     const victoryStats = calculateVictoryStatistics(allMatches, timelines);
     saveVictoryStatistics(victoryStats);
+
+    console.log("Triggering revalidation...");
+    await triggerRevalidation();
 
     console.log("Stats recalculation completed successfully!");
     alert("Stats saved successfully!");
