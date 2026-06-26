@@ -161,6 +161,7 @@ export const championNames: { [key: number]: string } = {
   799: "Ambessa",
   800: "Mel",
   804: "Yunara",
+  805: "Locke",
   875: "Sett",
   876: "Lillia",
   887: "Gwen",
@@ -250,7 +251,7 @@ export const formatTimeAgo = (timestamp: number): string => {
 export const calculateKDA = (
   kills: number,
   deaths: number,
-  assists: number
+  assists: number,
 ): string => {
   const kda = deaths === 0 ? kills + assists : (kills + assists) / deaths;
   return kda.toFixed(2);
@@ -264,7 +265,7 @@ export const calculateWinRate = (wins: number, losses: number): number => {
 export const formatRank = (
   tier: string,
   division: string,
-  leaguePoints: number
+  leaguePoints: number,
 ): string => {
   if (!tier || tier === "UNRANKED") {
     return "Unranked";
