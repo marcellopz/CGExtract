@@ -47,16 +47,32 @@ async function triggerRevalidation(): Promise<void> {
     return;
   }
 
-  const response = await fetch(revalidateUrl, {
-    method: "POST",
-    headers: {
-      "x-revalidate-secret": revalidateSecret,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(revalidateUrl, {
+      method: "POST",
+      headers: {
+        "x-revalidate-secret": revalidateSecret,
+      },
+    });
+  } catch (error) {
+    // fetch only throws on network-level failures (no response received)
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `POST ${revalidateUrl} did not get a response (${reason}). ` +
+        "Possible causes: no internet connection, wrong VITE_REVALIDATE_URL, " +
+        "or the request was blocked by CORS."
+    );
+  }
 
   if (!response.ok) {
+    const body = await response.text().catch(() => "");
     throw new Error(
-      `Revalidation failed: ${response.status} ${response.statusText}`
+      `POST ${revalidateUrl} returned ${response.status} ${response.statusText}` +
+        (response.status === 401 || response.status === 403
+          ? " (check VITE_REVALIDATE_SECRET)"
+          : "") +
+        (body ? `: ${body.slice(0, 200)}` : "")
     );
   }
 }
@@ -207,7 +223,19 @@ export const recalculateStats = async (): Promise<void> => {
     saveVictoryStatistics(victoryStats);
 
     console.log("Triggering revalidation...");
-    await triggerRevalidation();
+    try {
+      await triggerRevalidation();
+    } catch (error) {
+      // Stats are already calculated and saved at this point, so report the
+      // revalidation failure on its own instead of as a recalculation error.
+      console.error("Revalidation failed:", error);
+      alert(
+        `Stats were saved successfully, but the site revalidation call failed:\n\n${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      return;
+    }
 
     console.log("Stats recalculation completed successfully!");
     alert("Stats saved successfully!");

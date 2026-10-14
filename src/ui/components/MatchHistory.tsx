@@ -1,6 +1,15 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./MatchHistory.css";
 import { championNames } from "../constants/lcuData";
+import { RoleAssignmentDialog } from "./RoleAssignmentDialog";
+import { uploadFile } from "../service/uploadFile";
+import { transformRoleAssignments } from "../service/roleAssignments";
+import {
+  confirmNonCustomUpload,
+  isCustomGame,
+} from "../service/customGameCheck";
+import { useAuth } from "../hooks/useAuth";
+import type { RoleAssignments } from "../../../gameTypes";
 
 interface MatchParticipant {
   championId: number;
@@ -40,6 +49,12 @@ interface MatchHistory {
   };
 }
 
+interface PendingUpload {
+  gameId: number;
+  matchData: unknown;
+  timelineData: unknown;
+}
+
 // Queue ID mappings
 const queueNames: { [key: number]: string } = {
   420: "Ranked Solo",
@@ -56,6 +71,12 @@ export function MatchHistory() {
   const [matchesPerPage, setMatchesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(0);
   const [showCustomGamesOnly, setShowCustomGamesOnly] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(
+    null
+  );
+  // gameId of the match currently being fetched or uploaded
+  const [uploadingGameId, setUploadingGameId] = useState<number | null>(null);
+  const { user } = useAuth();
 
   const loadMatchHistory = async (append = false) => {
     setLoading(true);
@@ -90,6 +111,13 @@ export function MatchHistory() {
       setLoading(false);
     }
   };
+
+  // Tabs are unmounted when inactive, so this runs every time the user
+  // switches to the Match History tab.
+  useEffect(() => {
+    void loadMatchHistory(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadMoreMatches = () => {
     loadMatchHistory(true);
@@ -162,6 +190,92 @@ export function MatchHistory() {
     } catch (error) {
       console.error("Failed to download game timeline:", error);
       alert("Failed to download game timeline. Please try again.");
+    }
+  };
+
+  // Fetches match details + timeline from the LCU and opens the role dialog.
+  // The actual upload happens once the user confirms the roles.
+  const startUpload = async (match: MatchData) => {
+    if (!user) {
+      alert("Please sign in to upload matches");
+      return;
+    }
+
+    if (!match.gameId || match.gameId === 0) {
+      alert("Invalid game ID. Cannot upload match.");
+      return;
+    }
+
+    setUploadingGameId(match.gameId);
+    try {
+      const [matchData, timelineData] = await Promise.all([
+        window.electron.getDetailedMatch(match.gameId),
+        window.electron.getGameTimeline(match.gameId),
+      ]);
+
+      if (
+        !isCustomGame(matchData) &&
+        !confirmNonCustomUpload([`Game ${match.gameId}`])
+      ) {
+        setUploadingGameId(null);
+        return;
+      }
+
+      setPendingUpload({ gameId: match.gameId, matchData, timelineData });
+    } catch (error) {
+      console.error("Failed to fetch match data for upload:", error);
+      alert("Failed to fetch match data for upload. Please try again.");
+      setUploadingGameId(null);
+    }
+  };
+
+  // The dialog calls onClose both on cancel and right after onSave, so we track
+  // whether the user confirmed to know if the upload is still running.
+  const roleSavedRef = useRef(false);
+
+  const closeUploadDialog = () => {
+    setPendingUpload(null);
+    if (!roleSavedRef.current) {
+      setUploadingGameId(null);
+    }
+    roleSavedRef.current = false;
+  };
+
+  const handleSaveRoles = async (roleAssignments: RoleAssignments) => {
+    if (!pendingUpload) return;
+    roleSavedRef.current = true;
+
+    const { gameId, matchData, timelineData } = pendingUpload;
+    const transformedAssignments = transformRoleAssignments(
+      roleAssignments,
+      matchData
+    );
+
+    try {
+      // Details first: uploadFile validates the match before writing anything,
+      // so an invalid match (e.g. not a custom game) won't leave an orphan timeline.
+      await uploadFile({
+        type: "gameDetails",
+        gameId,
+        data: matchData,
+        roleAssignments: transformedAssignments,
+      });
+      await uploadFile({
+        type: "timeline",
+        gameId,
+        data: timelineData,
+      });
+
+      alert(`Match ${gameId} uploaded successfully!`);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert(
+        `Failed to upload match ${gameId}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setUploadingGameId(null);
     }
   };
 
@@ -326,7 +440,7 @@ export function MatchHistory() {
                           <div key={itemSlot} className="item-slot">
                             {itemId > 0 && (
                               <img
-                                src={`http://ddragon.leagueoflegends.com/cdn/14.1.1/img/item/${itemId}.png`}
+                                src={`http://ddragon.leagueoflegends.com/cdn/16.6.1/img/item/${itemId}.png`}
                                 alt={`Item ${itemId}`}
                                 className="item-icon"
                               />
@@ -352,6 +466,18 @@ export function MatchHistory() {
                     >
                       📊
                     </button>
+                    <button
+                      className="download-btn upload-btn"
+                      onClick={() => void startUpload(match)}
+                      disabled={uploadingGameId !== null}
+                      title={
+                        user
+                          ? "Upload match and timeline directly"
+                          : "Sign in to upload"
+                      }
+                    >
+                      {uploadingGameId === match.gameId ? "⏱️" : "🚀"}
+                    </button>
                   </div>
                 </div>
               );
@@ -370,6 +496,15 @@ export function MatchHistory() {
             </div>
           )}
         </>
+      )}
+
+      {pendingUpload && (
+        <RoleAssignmentDialog
+          isOpen
+          onClose={closeUploadDialog}
+          onSave={(assignments) => void handleSaveRoles(assignments)}
+          matchData={pendingUpload.matchData}
+        />
       )}
     </div>
   );

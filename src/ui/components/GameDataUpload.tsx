@@ -2,6 +2,11 @@ import { useState } from "react";
 import "./GameDataUpload.css";
 import { RoleAssignmentDialog } from "./RoleAssignmentDialog";
 import { uploadFile } from "../service/uploadFile";
+import { transformRoleAssignments } from "../service/roleAssignments";
+import {
+  confirmNonCustomUpload,
+  isCustomGame,
+} from "../service/customGameCheck";
 import { useAuth } from "../hooks/useAuth";
 
 import { type RoleAssignments } from "../../../gameTypes";
@@ -172,62 +177,6 @@ export function GameDataUpload() {
     }
   };
 
-  const transformRoleAssignments = (
-    roleAssignments: RoleAssignments,
-    gameData: unknown
-  ): RoleAssignments => {
-    try {
-      const data = gameData as Record<string, unknown>;
-
-      // Check if we have participantIdentities to map participantId to summonerId
-      if (
-        !data?.participantIdentities ||
-        !Array.isArray(data.participantIdentities)
-      ) {
-        console.warn(
-          "No participantIdentities found, returning original assignments"
-        );
-        return roleAssignments;
-      }
-
-      const participantIdentities = data.participantIdentities as unknown[];
-      const transformedAssignments: RoleAssignments = {};
-
-      // Map each participantId to summonerId
-      Object.entries(roleAssignments).forEach(([participantIdStr, role]) => {
-        const participantId = parseInt(participantIdStr);
-
-        // Find the corresponding participant identity
-        const participantIdentity = participantIdentities.find(
-          (identity: unknown) => {
-            const id = identity as Record<string, unknown>;
-            return id.participantId === participantId;
-          }
-        ) as Record<string, unknown> | undefined;
-
-        const player = participantIdentity?.player as
-          | Record<string, unknown>
-          | undefined;
-        const summonerId = player?.summonerId as number | undefined;
-
-        if (summonerId) {
-          transformedAssignments[summonerId] = role;
-        } else {
-          console.warn(
-            `Could not find summonerId for participantId ${participantId}`
-          );
-          // Fallback: keep the original participantId as key
-          transformedAssignments[participantId] = role;
-        }
-      });
-
-      return transformedAssignments;
-    } catch (error) {
-      console.error("Error transforming role assignments:", error);
-      return roleAssignments; // Return original if transformation fails
-    }
-  };
-
   const hasRoleAssignments = (file: UploadedGameFile) => {
     return file.roleAssignments && Object.keys(file.roleAssignments).length > 0;
   };
@@ -244,6 +193,14 @@ export function GameDataUpload() {
 
     if (filesToUpload.length === 0) {
       alert("Please assign roles to all game details files before uploading");
+      return;
+    }
+
+    const nonCustomGames = filesToUpload
+      .filter((file) => file.type === "gameDetails" && !isCustomGame(file.data))
+      .map((file) => file.name);
+
+    if (!confirmNonCustomUpload(nonCustomGames)) {
       return;
     }
 

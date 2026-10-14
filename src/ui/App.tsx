@@ -23,10 +23,15 @@ function AppContent() {
       component: <SummonerProfile />,
     },
     { id: "matches", label: "Match History", component: <MatchHistory /> },
-    { id: "bulk", label: "Bulk Timeline", component: <BulkTimelineDownload /> },
+    {
+      id: "bulk",
+      label: "Bulk Timeline",
+      component: <BulkTimelineDownload />,
+      hidden: true, // temporarily hidden, set to false to bring the tab back
+    },
     { id: "upload", label: "Game Data Upload", component: <GameDataUpload /> },
     { id: "stats", label: "Stats Manager", component: <StatsManager /> },
-  ];
+  ].filter((tab) => !tab.hidden);
 
   return (
     <div className="app">

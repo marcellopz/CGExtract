@@ -27,3 +27,4 @@ dist-ssr
 .env
 .env-s2
 .env-s3
+.env-s4
