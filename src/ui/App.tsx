@@ -7,6 +7,7 @@ import { BulkTimelineDownload } from "./components/BulkTimelineDownload";
 import { GameDataUpload } from "./components/GameDataUpload";
 import { StatsManager } from "./components/StatsManager";
 import { AuthProvider } from "./components/auth/AuthProvider";
+import { ToastProvider } from "./components/toast/ToastProvider";
 import { UserProfile } from "./components/UserProfile";
 import { AuthModal } from "./components/auth/AuthModal";
 import { useAuth } from "./hooks/useAuth";
@@ -91,9 +92,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

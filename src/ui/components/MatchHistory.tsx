@@ -9,6 +9,7 @@ import {
   isCustomGame,
 } from "../service/customGameCheck";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
 import type { RoleAssignments } from "../../../gameTypes";
 
 interface MatchParticipant {
@@ -74,9 +75,23 @@ export function MatchHistory() {
   const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(
     null
   );
-  // gameId of the match currently being fetched or uploaded
-  const [uploadingGameId, setUploadingGameId] = useState<number | null>(null);
+  // gameIds currently being fetched or uploaded. Tracked per match so several
+  // uploads can run at the same time without locking the other buttons.
+  const [busyGameIds, setBusyGameIds] = useState<Set<number>>(new Set());
   const { user } = useAuth();
+  const { showToast } = useToast();
+
+  const setGameBusy = (gameId: number, busy: boolean) => {
+    setBusyGameIds((prev) => {
+      const next = new Set(prev);
+      if (busy) {
+        next.add(gameId);
+      } else {
+        next.delete(gameId);
+      }
+      return next;
+    });
+  };
 
   const loadMatchHistory = async (append = false) => {
     setLoading(true);
@@ -127,7 +142,7 @@ export function MatchHistory() {
     try {
       // Validate gameId before making API call
       if (!match.gameId || match.gameId === 0) {
-        alert("Invalid game ID. Cannot download match details.");
+        showToast("Invalid game ID. Cannot download match details.", "error");
         return;
       }
 
@@ -155,7 +170,10 @@ export function MatchHistory() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download detailed match data:", error);
-      alert("Failed to download detailed match data. Please try again.");
+      showToast(
+        "Failed to download detailed match data. Please try again.",
+        "error"
+      );
     }
   };
 
@@ -163,7 +181,7 @@ export function MatchHistory() {
     try {
       // Validate gameId before making API call
       if (!match.gameId || match.gameId === 0) {
-        alert("Invalid game ID. Cannot download game timeline.");
+        showToast("Invalid game ID. Cannot download game timeline.", "error");
         return;
       }
 
@@ -189,7 +207,7 @@ export function MatchHistory() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download game timeline:", error);
-      alert("Failed to download game timeline. Please try again.");
+      showToast("Failed to download game timeline. Please try again.", "error");
     }
   };
 
@@ -197,16 +215,18 @@ export function MatchHistory() {
   // The actual upload happens once the user confirms the roles.
   const startUpload = async (match: MatchData) => {
     if (!user) {
-      alert("Please sign in to upload matches");
+      showToast("Please sign in to upload matches", "error");
       return;
     }
 
     if (!match.gameId || match.gameId === 0) {
-      alert("Invalid game ID. Cannot upload match.");
+      showToast("Invalid game ID. Cannot upload match.", "error");
       return;
     }
 
-    setUploadingGameId(match.gameId);
+    if (busyGameIds.has(match.gameId)) return;
+
+    setGameBusy(match.gameId, true);
     try {
       const [matchData, timelineData] = await Promise.all([
         window.electron.getDetailedMatch(match.gameId),
@@ -217,15 +237,18 @@ export function MatchHistory() {
         !isCustomGame(matchData) &&
         !confirmNonCustomUpload([`Game ${match.gameId}`])
       ) {
-        setUploadingGameId(null);
+        setGameBusy(match.gameId, false);
         return;
       }
 
       setPendingUpload({ gameId: match.gameId, matchData, timelineData });
     } catch (error) {
       console.error("Failed to fetch match data for upload:", error);
-      alert("Failed to fetch match data for upload. Please try again.");
-      setUploadingGameId(null);
+      showToast(
+        `Failed to fetch data for match ${match.gameId}. Please try again.`,
+        "error"
+      );
+      setGameBusy(match.gameId, false);
     }
   };
 
@@ -234,10 +257,11 @@ export function MatchHistory() {
   const roleSavedRef = useRef(false);
 
   const closeUploadDialog = () => {
-    setPendingUpload(null);
-    if (!roleSavedRef.current) {
-      setUploadingGameId(null);
+    if (pendingUpload && !roleSavedRef.current) {
+      // Cancelled: nothing is uploading for this match anymore
+      setGameBusy(pendingUpload.gameId, false);
     }
+    setPendingUpload(null);
     roleSavedRef.current = false;
   };
 
@@ -266,16 +290,17 @@ export function MatchHistory() {
         data: timelineData,
       });
 
-      alert(`Match ${gameId} uploaded successfully!`);
+      showToast(`Match ${gameId} uploaded successfully!`, "success");
     } catch (error) {
       console.error("Upload error:", error);
-      alert(
+      showToast(
         `Failed to upload match ${gameId}: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
+        "error"
       );
     } finally {
-      setUploadingGameId(null);
+      setGameBusy(gameId, false);
     }
   };
 
@@ -469,14 +494,14 @@ export function MatchHistory() {
                     <button
                       className="download-btn upload-btn"
                       onClick={() => void startUpload(match)}
-                      disabled={uploadingGameId !== null}
+                      disabled={busyGameIds.has(match.gameId)}
                       title={
                         user
                           ? "Upload match and timeline directly"
                           : "Sign in to upload"
                       }
                     >
-                      {uploadingGameId === match.gameId ? "⏱️" : "🚀"}
+                      {busyGameIds.has(match.gameId) ? "⏱️" : "🚀"}
                     </button>
                   </div>
                 </div>

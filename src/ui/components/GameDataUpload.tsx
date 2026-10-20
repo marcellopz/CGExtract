@@ -8,6 +8,7 @@ import {
   isCustomGame,
 } from "../service/customGameCheck";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
 
 import { type RoleAssignments } from "../../../gameTypes";
 
@@ -32,6 +33,7 @@ export function GameDataUpload() {
   );
   const [isUploading, setIsUploading] = useState(false);
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -183,7 +185,7 @@ export function GameDataUpload() {
 
   const handleUploadFiles = async () => {
     if (!user) {
-      alert("Please sign in to upload files");
+      showToast("Please sign in to upload files", "error");
       return;
     }
 
@@ -192,7 +194,10 @@ export function GameDataUpload() {
     );
 
     if (filesToUpload.length === 0) {
-      alert("Please assign roles to all game details files before uploading");
+      showToast(
+        "Please assign roles to all game details files before uploading",
+        "error"
+      );
       return;
     }
 
@@ -231,10 +236,18 @@ export function GameDataUpload() {
         );
       }
 
-      alert(`Successfully uploaded ${filesToUpload.length} files!`);
+      showToast(
+        `Successfully uploaded ${filesToUpload.length} files!`,
+        "success"
+      );
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Failed to upload files. Please try again.");
+      showToast(
+        `Failed to upload files: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        "error"
+      );
 
       // Reset file statuses on error
       setUploadedFiles((prev) =>
