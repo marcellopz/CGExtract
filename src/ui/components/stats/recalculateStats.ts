@@ -77,8 +77,15 @@ async function triggerRevalidation(): Promise<void> {
   }
 }
 
-// Main RecalculateStats function
-export const recalculateStats = async (): Promise<void> => {
+export interface RecalculateStatsResult {
+  /** Set when the stats were saved but the site revalidation call failed. */
+  revalidationError?: string;
+}
+
+// Main RecalculateStats function.
+// Throws if the recalculation itself fails; the caller is responsible for
+// showing the outcome to the user.
+export const recalculateStats = async (): Promise<RecalculateStatsResult> => {
   try {
     console.log("Starting stats recalculation...");
 
@@ -149,7 +156,9 @@ export const recalculateStats = async (): Promise<void> => {
     console.log("Processing overall statistics...");
 
     const processedDataAll = processDataAll(allMatches, legends, timelines);
-    saveOverallStats(processedDataAll);
+    // Awaited because the overview card on the Stats Manager reads this
+    // right after the recalculation finishes.
+    await saveOverallStats(processedDataAll);
 
     // Process and save player pairs
     console.log("Processing player pairs...");
@@ -229,23 +238,16 @@ export const recalculateStats = async (): Promise<void> => {
       // Stats are already calculated and saved at this point, so report the
       // revalidation failure on its own instead of as a recalculation error.
       console.error("Revalidation failed:", error);
-      alert(
-        `Stats were saved successfully, but the site revalidation call failed:\n\n${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-      return;
+      return {
+        revalidationError:
+          error instanceof Error ? error.message : "Unknown error",
+      };
     }
 
     console.log("Stats recalculation completed successfully!");
-    alert("Stats saved successfully!");
+    return {};
   } catch (error) {
     console.error("Error during stats recalculation:", error);
-    alert(
-      `Error recalculating stats: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
-    );
     throw error;
   }
 };

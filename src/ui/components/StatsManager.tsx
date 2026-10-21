@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./StatsManager.css";
 import { recalculateStats, getOverviewData } from "./stats";
+import { useToast } from "../hooks/useToast";
 
 interface OverviewData {
   totalPlayers: number;
@@ -9,6 +10,7 @@ interface OverviewData {
 }
 
 export function StatsManager() {
+  const { showToast } = useToast();
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [overviewData, setOverviewData] = useState<OverviewData>({
     totalPlayers: 0,
@@ -38,11 +40,28 @@ export function StatsManager() {
 
     setIsRecalculating(true);
     try {
-      await recalculateStats();
-      // Refresh overview data after recalculation
-      // await fetchOverviewData();
+      const result = await recalculateStats();
+
+      if (result.revalidationError) {
+        showToast(
+          `Stats were saved successfully, but the site revalidation call failed:\n\n${result.revalidationError}`,
+          "error",
+          15000
+        );
+      } else {
+        showToast("Stats saved successfully!", "success");
+      }
+
+      // Refresh the quick overview with the freshly saved stats
+      await fetchOverviewData();
     } catch (error) {
       console.error("Failed to recalculate stats:", error);
+      showToast(
+        `Error recalculating stats: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        "error"
+      );
     } finally {
       setIsRecalculating(false);
     }
