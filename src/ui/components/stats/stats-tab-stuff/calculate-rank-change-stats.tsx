@@ -163,8 +163,11 @@ export function calculatePlayerRankChangeStats(
     const summonerId = accountId.toString();
 
     for (const role of roles) {
-      // Find the most recent rank change timestamp for this player/role
-      let lastChangeTimestamp = earliestMatchTimestamp;
+      // Find the most recent rank change timestamp for this player/role.
+      // Matches are counted with a strict `gameDate > lastChangeTimestamp`, so
+      // the baseline must sit just BEFORE the earliest match, otherwise the
+      // earliest match itself would be excluded.
+      let lastChangeTimestamp = earliestMatchTimestamp - 1;
       let currentRank: number | null = null;
 
       if (playersRankChangeLog?.[nameId]?.[role]) {
